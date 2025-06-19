@@ -1,20 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-interface usuario {
-  usuario: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    enabled: boolean;
-    image: string;
-    deleted: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
-}
-export const Index = ({ usuario }: usuario) => {
+
+export const Index = ({ usuario }: { usuario: any }) => {
   return (
     <tr>
       <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>

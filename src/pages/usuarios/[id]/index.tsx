@@ -15,15 +15,20 @@ const Index = ({ id }: { id: string }) => {
   const { form, formData, updateFormData } = useFormData({});
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
+    const dataForm = formData as {
+      name: string;
+      email: string;
+      role: string;
+      enabled: string;
+    };
     const password = nanoid(8);
     try {
       await createUser({
-        name: formData.name,
-        email: formData.email,
+        name: dataForm.name,
+        email: dataForm.email,
         password,
-        role: formData.role,
-        enabled: formData.enabled === 'on' ? true : false,
+        role: dataForm.role,
+        enabled: dataForm.enabled === 'on' ? true : false,
       });
     } catch (error) {
       console.error('Error creating user:', error);

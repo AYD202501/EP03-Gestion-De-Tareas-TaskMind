@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const makePost = (url: string, body: string, options: { headers?: Record<string, string> }) => {
   const headers = options.headers || {};
   return fetch(url, {

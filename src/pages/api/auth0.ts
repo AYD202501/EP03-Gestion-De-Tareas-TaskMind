@@ -1,7 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAuth0User, getAuth0Token } from '@/utils/api';
 import prisma from '@/config/prisma';
 
-const Auth0 = async (req, res) => {
+const Auth0 = async (
+  req: { method: string; body: { data: any } },
+  res: {
+    status: (arg0: number) => {
+      (): any;
+      new (): any;
+      json: { (arg0: { error: any }): void; new (): any };
+      end: { (arg0: string): void; new (): any };
+    };
+    setHeader: (arg0: string, arg1: string[]) => void;
+  }
+) => {
   if (req.method === 'POST') {
     const { data } = req.body;
     let userData;

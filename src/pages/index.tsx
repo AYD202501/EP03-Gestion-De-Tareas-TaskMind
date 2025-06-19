@@ -1,6 +1,4 @@
 import React from 'react';
-import FeatureCard from '@/components/Molecules/FeatureCard';
-import Hero from '@/components/Organisms/Hero';
 import Features from '@/components/Organisms/Features';
 import Nav from '@/components/Organisms/Nav';
 const Index = () => {

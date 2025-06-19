@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { getUsers } from '@/utils/api';
 import UserTableRow from '@/components/Molecules/userTableRow';
