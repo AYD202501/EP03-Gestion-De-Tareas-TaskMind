@@ -1,13 +1,15 @@
 import React, { ReactNode } from 'react';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Molecules/app-sidebar';
+import Header from '@/components/Organisms/Header';
 
 const Index = ({ children }: { children: ReactNode }) => {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <main>
-        <SidebarTrigger />
+      <AppSidebar/>
+      <main className='w-full'>
+        <Header title='Panel Administrativo'/>
+
         {children}
       </main>
     </SidebarProvider>

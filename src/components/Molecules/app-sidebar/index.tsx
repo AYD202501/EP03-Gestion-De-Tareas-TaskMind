@@ -49,7 +49,7 @@ const items = [
 
 export function AppSidebar() {
   return (
-    <Sidebar>
+    <Sidebar className='z-40'>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
