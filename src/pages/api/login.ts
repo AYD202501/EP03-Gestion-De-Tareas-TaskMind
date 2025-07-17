@@ -1,6 +1,7 @@
-// src/pages/api/login.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
+import { serialize } from 'cookie'
+import { signToken } from '@/lib/auth'
 
 type LoginSuccess = {
   role: 'Administrator' | 'Project_Manager' | 'Colaborator'
@@ -42,13 +43,23 @@ export default async function handler(
       }
     })
 
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no existe.' })
+    if (!user || user.password !== password) {
+      return res.status(401).json({ error: 'Estas credenciales no coinciden con nuestros registros.' })
     }
 
-    if (user.password !== password) {
-      return res.status(401).json({ error: 'Contraseña incorrecta.' })
-    }
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role
+    })
+
+    res.setHeader('Set-Cookie', serialize('auth_token', token, {
+      httpOnly: true,
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24 * 7
+    }))
 
     return res.status(200).json({
       role: user.role as 'Administrator' | 'Project_Manager' | 'Colaborator',
@@ -56,6 +67,6 @@ export default async function handler(
     })
   } catch (err) {
     console.error('Login error:', err)
-    return res.status(500).json({ error: 'Error interno del servidor.' })
+    return res.status(401).json({ error: 'Error interno del servidor.' })
   }
 }

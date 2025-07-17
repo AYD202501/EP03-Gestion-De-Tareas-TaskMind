@@ -12,22 +12,21 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getRole } from "@/lib/utils";
 import { useSession } from 'next-auth/react';
 
 const items = {
-  "admin": [
+  "Administrator": [
     { title: 'Inicio', url: '/dashboard', icon: Home },
     { title: 'Usuarios', url: '/users', icon: Inbox },
     { title: 'Proyectos', url: '/projects', icon: Calendar },
     { title: 'Tareas', url: '/tasks', icon: Search },
   ],
-  "projectManager": [
+  "Project_Manager": [
       { title: 'Inicio', url: '/dashboard', icon: Home },
       { title: 'Proyectos', url: '/projects', icon: Calendar },
       { title: 'Tareas', url: '/tasks', icon: Search },
   ],
-  "collaborator": [
+  "Colaborator": [
       { title: 'Inicio', url: '/dashboard', icon: Home },
       { title: 'Tareas', url: '/tasks', icon: Search },
   ]
@@ -35,8 +34,12 @@ const items = {
 
 export function AppSidebar() {
   const { data: session } = useSession()
-  const user = session?.user
-  const menuItems = items[getRole(user)]
+  const user = {
+    name: "ANA GRANADA",
+    email: "ana@gmail.com",
+    image: undefined,
+  }
+  const menuItems = items['Administrator']
 
 
   return (

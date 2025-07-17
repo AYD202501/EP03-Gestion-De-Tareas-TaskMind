@@ -1,26 +1,6 @@
-import Layout from '@/components/Organisms/Layout';
-import { GetServerSidePropsContext } from 'next'
-import { getSession } from 'next-auth/react'
+import { withAuth } from "@/lib/auth";
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const session = await getSession(context)
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    }
-  }
-
-  return {
-    redirect: {
-      destination: '/dashboard',
-      permanent: false,
-    },
-  }
-}
+export const getServerSideProps = withAuth()
 
 export default function Index() {
     return (

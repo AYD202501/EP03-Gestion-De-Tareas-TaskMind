@@ -3,16 +3,15 @@ import Layout from '@/components/Organisms/Layout';
 import {
   ChartConfig,
 } from "@/components/ui/chart"
-import { getRole, withAuth } from "@/lib/utils";
-import { Session } from 'next-auth/react'
+import { withAuth } from "@/lib/auth";
 
 export const getServerSideProps = withAuth()
 
 const chartData = [
-  { project: "Proyecyo 1", done: 186, inReview: 80, inProgress: 120, pending: 90 },
-  { project: "Proyecyo 2", done: 120, inReview: 150, inProgress: 40, pending: 60 },
-  { project: "Proyecyo 3", done: 210, inReview: 190, inProgress: 100, pending: 40 },
-  { project: "Proyecyo 4", done: 150, inReview: 180, inProgress: 40, pending: 60 },
+  { project: "Proyecto 1", done: 186, inReview: 80, inProgress: 120, pending: 90 },
+  { project: "Proyecto 2", done: 120, inReview: 150, inProgress: 40, pending: 60 },
+  { project: "Proyecto 3", done: 210, inReview: 190, inProgress: 100, pending: 40 },
+  { project: "Proyecto 4", done: 150, inReview: 180, inProgress: 40, pending: 60 },
 
 ]
 
@@ -32,17 +31,17 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const items: Record<string, {title: string, subtitle: string}> = {
-  admin: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
-  projectManager: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
-  collaborator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+  Administrator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+  Project_Manager: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+  Colaborator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
 }
 
 interface Props {
-  session: Session
+  user: any
 }
 
-export default function Index({ session }: Props) {
-  const titleItems = items[getRole(session?.user)]
+export default function Index({ user }: Props) {
+  const titleItems = items[user.role]
 
   return (
   <Layout childrenTitle={titleItems.title} childrenSubitle={titleItems.subtitle}>

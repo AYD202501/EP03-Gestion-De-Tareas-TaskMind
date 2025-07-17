@@ -5,7 +5,7 @@ import Modal from '@/components/Molecules/Modal';
 import TaskForm from '@/components/Molecules/TaskForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { withAuth } from "@/lib/utils";
+import { withAuth } from "@/lib/auth";
 
 export const getServerSideProps = withAuth()
 

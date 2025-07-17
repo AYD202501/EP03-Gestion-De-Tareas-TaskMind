@@ -16,8 +16,6 @@ const Index = () => {
     fetchUsers();
   }, []);
 
-  console.log('usuarios :>> ', usuarios);
-
   return (
     <div>
       <section className='container px-4 mx-auto'>
