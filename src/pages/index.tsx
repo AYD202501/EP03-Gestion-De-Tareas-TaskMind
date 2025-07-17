@@ -1,15 +1,31 @@
-import React from 'react';
-import Features from '@/components/Organisms/Features';
-import Nav from '@/components/Organisms/Nav';
-const Index = () => {
-  return (
-    <div className=' w-full flex flex-col items-center justify-center  h-screen'>
-      <Nav />
-      <section>
-        <Features />
-      </section>
-    </div>
-  );
-};
+import Layout from '@/components/Organisms/Layout';
+import { GetServerSidePropsContext } from 'next'
+import { getSession } from 'next-auth/react'
 
-export default Index;
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context)
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    redirect: {
+      destination: '/dashboard',
+      permanent: false,
+    },
+  }
+}
+
+export default function Index() {
+    return (
+        <div className='bg-white  px-4 py-6 rounded-lg shadow-lg'>        
+        </div>
+    );
+}
+

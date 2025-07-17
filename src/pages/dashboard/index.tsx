@@ -22,6 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: { session },
   }
 }
+
 const chartData = [
   { project: "Proyecyo 1", done: 186, inReview: 80, inProgress: 120, pending: 90 },
   { project: "Proyecyo 2", done: 120, inReview: 150, inProgress: 40, pending: 60 },
