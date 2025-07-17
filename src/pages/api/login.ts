@@ -1,11 +1,10 @@
 // src/pages/api/login.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
-import type { Enum_RoleName } from '@prisma/client'
 
 type LoginSuccess = {
-  role: 'ADMIN' | 'PROJECT_MANAGER' | 'COLLABORATOR'
-  redirectTo: string    // <-- ruta que rellenarás cuando crees las páginas
+  role: 'Administrator' | 'Project_Manager' | 'Colaborator'
+  redirectTo: string
 }
 type LoginError = { error: string }
 type LoginResponse = LoginSuccess | LoginError
@@ -47,14 +46,13 @@ export default async function handler(
       return res.status(404).json({ error: 'Usuario no existe.' })
     }
 
-    // Para producción, usa bcrypt.compare() tras hashear la contraseña en BD
     if (user.password !== password) {
       return res.status(401).json({ error: 'Contraseña incorrecta.' })
     }
 
     return res.status(200).json({
-      role: user.role as Enum_RoleName,
-      redirectTo: '/'
+      role: user.role as 'Administrator' | 'Project_Manager' | 'Colaborator',
+      redirectTo: '/dashboard'
     })
   } catch (err) {
     console.error('Login error:', err)

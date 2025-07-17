@@ -1,23 +1,26 @@
-import { PrismaClient, Enum_RoleName } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
   await prisma.user.createMany({
     data: [
       {
+        name: 'Admin',
         email: 'admin@example.com',
         password: 'admin123',
-        role: Enum_RoleName.ADMIN
+        role: 'Administrator'
       },
       {
+        name: 'Project Manager',
         email: 'pm@example.com',
         password: 'pm123',
-        role: Enum_RoleName.PROJECT_MANAGER
+        role: 'Project_Manager'
       },
       {
+        name: 'Collaborator',
         email: 'colab@example.com',
         password: 'colab123',
-        role: Enum_RoleName.COLLABORATOR
+        role: 'Colaborator'
       }
     ],
     skipDuplicates: true
