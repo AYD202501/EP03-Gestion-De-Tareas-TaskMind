@@ -1,30 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `address` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `age` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `birthdate` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `createdAt` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `phone` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `updatedAt` on the `Profile` table. All the data in the column will be lost.
-  - You are about to drop the column `deleted` on the `User` table. All the data in the column will be lost.
-  - You are about to drop the column `email_verified` on the `User` table. All the data in the column will be lost.
-  - You are about to drop the column `enabled` on the `User` table. All the data in the column will be lost.
-  - You are about to drop the column `image` on the `User` table. All the data in the column will be lost.
-  - The `role` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
-  - You are about to drop the `Account` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Booking` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Room` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Service` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Session` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `VerificationToken` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_RoomToService` table. If the table is not empty, all the data it contains will be lost.
-  - Added the required column `assignedToId` to the `Category` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `password` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Made the column `name` on table `User` required. This step will fail if there are existing NULL values in that column.
-  - Made the column `email` on table `User` required. This step will fail if there are existing NULL values in that column.
-
-*/
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('Administrator', 'Project_Manager', 'Colaborator');
 
@@ -37,84 +10,18 @@ CREATE TYPE "Task_Status" AS ENUM ('Pending', 'In_process', 'Review', 'Finished'
 -- CreateEnum
 CREATE TYPE "Color" AS ENUM ('Yellow', 'Blue', 'Red', 'Purple', 'Orange', 'Gray', 'Green', 'Pink');
 
--- DropForeignKey
-ALTER TABLE "Account" DROP CONSTRAINT "Account_user_id_fkey";
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" "Role" NOT NULL DEFAULT 'Colaborator',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
--- DropForeignKey
-ALTER TABLE "Booking" DROP CONSTRAINT "Booking_room_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Booking" DROP CONSTRAINT "Booking_user_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "Profile" DROP CONSTRAINT "Profile_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Room" DROP CONSTRAINT "Room_categoryId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Session" DROP CONSTRAINT "Session_user_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "_RoomToService" DROP CONSTRAINT "_RoomToService_A_fkey";
-
--- DropForeignKey
-ALTER TABLE "_RoomToService" DROP CONSTRAINT "_RoomToService_B_fkey";
-
--- DropIndex
-DROP INDEX "Category_name_key";
-
--- AlterTable
-ALTER TABLE "Category" ADD COLUMN     "assignedToId" TEXT NOT NULL,
-ADD COLUMN     "tagColor" "Color" NOT NULL DEFAULT 'Gray';
-
--- AlterTable
-ALTER TABLE "Profile" DROP COLUMN "address",
-DROP COLUMN "age",
-DROP COLUMN "birthdate",
-DROP COLUMN "createdAt",
-DROP COLUMN "phone",
-DROP COLUMN "updatedAt",
-ADD COLUMN     "avatarUrl" TEXT,
-ADD COLUMN     "bio" TEXT;
-
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "deleted",
-DROP COLUMN "email_verified",
-DROP COLUMN "enabled",
-DROP COLUMN "image",
-ADD COLUMN     "password" TEXT NOT NULL,
-ALTER COLUMN "name" SET NOT NULL,
-DROP COLUMN "role",
-ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'Colaborator',
-ALTER COLUMN "email" SET NOT NULL;
-
--- DropTable
-DROP TABLE "Account";
-
--- DropTable
-DROP TABLE "Booking";
-
--- DropTable
-DROP TABLE "Room";
-
--- DropTable
-DROP TABLE "Service";
-
--- DropTable
-DROP TABLE "Session";
-
--- DropTable
-DROP TABLE "VerificationToken";
-
--- DropTable
-DROP TABLE "_RoomToService";
-
--- DropEnum
-DROP TYPE "Enum_RoleName";
-
--- DropEnum
-DROP TYPE "Enum_RoomType";
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Project" (
@@ -161,6 +68,28 @@ CREATE TABLE "Tag" (
 );
 
 -- CreateTable
+CREATE TABLE "Category" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "tagColor" "Color" NOT NULL DEFAULT 'Gray',
+    "assignedToId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Profile" (
+    "id" TEXT NOT NULL,
+    "bio" TEXT,
+    "avatarUrl" TEXT,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_taskTags" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
@@ -171,6 +100,12 @@ CREATE TABLE "_taskCategories" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Profile_userId_key" ON "Profile"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_taskTags_AB_unique" ON "_taskTags"("A", "B");
