@@ -11,71 +11,34 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { signOut } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getRole } from "@/lib/utils";
+import { useSession } from 'next-auth/react';
 
-// Menu items.
 const items = {
   "admin": [
-    {
-        title: 'Inicio',
-        url: '/dashboard',
-        icon: Home,
-      },
-      {
-        title: 'Usuarios',
-        url: '/users',
-        icon: Inbox,
-      },
-      {
-        title: 'Proyectos',
-        url: '/projects',
-        icon: Calendar,
-      },
-      {
-        title: 'Tareas',
-        url: '/tasks',
-        icon: Search,
-      },
+    { title: 'Inicio', url: '/dashboard', icon: Home },
+    { title: 'Usuarios', url: '/users', icon: Inbox },
+    { title: 'Proyectos', url: '/projects', icon: Calendar },
+    { title: 'Tareas', url: '/tasks', icon: Search },
   ],
   "projectManager": [
-    {
-        title: 'Inicio',
-        url: '/dashboard',
-        icon: Home,
-      },
-      {
-        title: 'Proyectos',
-        url: '/projects',
-        icon: Calendar,
-      },
-      {
-        title: 'Tareas',
-        url: '/tasks',
-        icon: Search,
-      },
+      { title: 'Inicio', url: '/dashboard', icon: Home },
+      { title: 'Proyectos', url: '/projects', icon: Calendar },
+      { title: 'Tareas', url: '/tasks', icon: Search },
   ],
   "collaborator": [
-    {
-        title: 'Inicio',
-        url: '/dashboard',
-        icon: Home,
-      },
-      {
-        title: 'Tareas',
-        url: '/tasks',
-        icon: Search,
-      },
+      { title: 'Inicio', url: '/dashboard', icon: Home },
+      { title: 'Tareas', url: '/tasks', icon: Search },
   ]
 };
 
 export function AppSidebar() {
+  const { data: session } = useSession()
+  const user = session?.user
+  const menuItems = items[getRole(user)]
+
+
   return (
     <Sidebar className='z-40 w-64'>
       <SidebarContent>
@@ -89,7 +52,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent className='mt-20'>
             <SidebarMenu className='gap-2 w-full flex items-center justify-center'>
-              {items.admin.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link href={item.url}>
@@ -108,11 +71,15 @@ export function AppSidebar() {
           <SidebarMenuItem className='gap-2 w-full flex justify-center'>
             <div className='pb-5 flex flex-row gap-2 items-center'>
               <Avatar>
-                <AvatarFallback className='bg-gray-300'>AG</AvatarFallback>
+                {user?.image ? (
+                  <AvatarImage src={user.image} alt="User avatar" />
+                ) : (
+                  <AvatarFallback className="bg-gray-300">NN</AvatarFallback>
+                )}
               </Avatar>
               <div className='text-sm'>
-                <p>Ana Maria Granada Rodas</p>
-                <p>ana.granada1@udea.edu.co</p>
+                <p>{ user?.name ?? 'NN'}</p>
+                <p>{ user?.email ?? 'test@test.com'}</p>
               </div>
             </div>
           </SidebarMenuItem>

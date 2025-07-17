@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Molecules/app-sidebar';
-import Header from '@/components/Organisms/Header';
+import { Header } from '@/components/Organisms/Header';
 
 interface Props {
   children: React.ReactNode
@@ -15,7 +15,7 @@ const Index = ({ children, childrenTitle, childrenSubitle }: Props) => {
       <SidebarProvider>
         <AppSidebar/>
         <div className='flex flex-1 flex-col'>
-          <Header title='Panel Administrativo'/>
+          <Header/>
           <main className="flex overflow-auto h-full">
             <div className="flex flex-col items-center h-full w-full justify-start">
               <div className="w-full px-4 pt-6 pb-1 h-auto">

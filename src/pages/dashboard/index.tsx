@@ -5,6 +5,8 @@ import {
 } from "@/components/ui/chart"
 import { GetServerSidePropsContext } from 'next'
 import { getSession } from 'next-auth/react'
+import { getRole } from "@/lib/utils";
+import { Session } from 'next-auth/react'
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context)
@@ -46,10 +48,21 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+const items: Record<string, {title: string, subtitle: string}> = {
+  admin: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+  projectManager: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+  collaborator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+}
 
-export default function Index() {
+interface Props {
+  session: Session
+}
+
+export default function Index({ session }: Props) {
+  const titleItems = items[getRole(session?.user)]
+
   return (
-  <Layout childrenTitle="Dashboard" childrenSubitle="Bienvenido al panel de control">
+  <Layout childrenTitle={titleItems.title} childrenSubitle={titleItems.subtitle}>
       <div className='bg-white  px-4 py-6 rounded-lg shadow-lg'>
         <h2 className="font-bold">Tareas por proyecto</h2>
         <h3>Distribución de tareas por estado y proyecto</h3>
