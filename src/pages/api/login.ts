@@ -54,7 +54,7 @@ export default async function handler(
 
     return res.status(200).json({
       role: user.role as Enum_RoleName,
-      redirectTo: ''  // <-- aquí pones '/users', '/projects' o '/tasks' cuando las tengas
+      redirectTo: '/'
     })
   } catch (err) {
     console.error('Login error:', err)

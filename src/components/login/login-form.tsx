@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils';
 import Button from '@/components/Atoms/Button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -92,15 +91,7 @@ export default function LoginForm() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-2 hover:underline text-primary"
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </a>
-                  </div>
+                  <Label htmlFor="password">Password</Label>
                   <Input id="password" name="password" type="password" required />
                 </div>
               </div>

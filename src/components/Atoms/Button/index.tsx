@@ -36,11 +36,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>, VariantPr
 const Button = ({ className, variant, size, children, ...props }: ButtonProps) => {
   return (
     <button 
-      onClick={() => {
-        signIn('auth0', {
-          callbackUrl: `${window.location.origin}/dashboard`,
-        });
-      }}
       className={cn(buttonVariants({ variant, size, className }))} {...props}>
       {children}
     </button>
