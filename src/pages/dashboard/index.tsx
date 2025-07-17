@@ -1,11 +1,27 @@
 import Chart from "@/components/Organisms/Chart"
 import Layout from '@/components/Organisms/Layout';
-import Main from '@/templates/Main';
-
 import {
   ChartConfig,
 } from "@/components/ui/chart"
+import { GetServerSidePropsContext } from 'next'
+import { getSession } from 'next-auth/react'
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const session = await getSession(context)
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    }
+  }
+
+  return {
+    props: { session },
+  }
+}
 const chartData = [
   { project: "Proyecyo 1", done: 186, inReview: 80, inProgress: 120, pending: 90 },
   { project: "Proyecyo 2", done: 120, inReview: 150, inProgress: 40, pending: 60 },

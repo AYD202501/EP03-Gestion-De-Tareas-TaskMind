@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { User } from "lucide-react"
 import { SidebarTrigger } from '@/components/ui/sidebar';
-
+import { signOut } from 'next-auth/react';
 
 interface Props {
   title: string
@@ -25,7 +25,12 @@ const Index = ({ title }: Props) => (
         <DropdownMenuLabel>Ana Granada</DropdownMenuLabel>
         <DropdownMenuLabel className="text-gray-600 -mt-3">Administrador</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-300"/>
-        <DropdownMenuItem className="hover:bg-gray-200 rounded-sm border-spacing-0">Cerrar Sesión</DropdownMenuItem>
+        <DropdownMenuItem className="hover:bg-gray-200 rounded-sm border-spacing-0">
+          <button
+            onClick={() => signOut({ callbackUrl: `${window.location.origin}/dashboard` })}
+            className='w-full text-left'
+          >Cerrar Sesión</button>
+          </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   </header>

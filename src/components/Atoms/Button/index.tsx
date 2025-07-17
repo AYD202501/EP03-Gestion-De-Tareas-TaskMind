@@ -38,7 +38,7 @@ const Button = ({ className, variant, size, children, ...props }: ButtonProps) =
     <button 
       onClick={() => {
         signIn('auth0', {
-          callbackUrl: `${window.location.origin}/`,
+          callbackUrl: `${window.location.origin}/dashboard`,
         });
       }}
       className={cn(buttonVariants({ variant, size, className }))} {...props}>
