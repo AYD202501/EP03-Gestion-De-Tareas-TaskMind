@@ -1,4 +1,5 @@
 import { Calendar, ChevronUp, Home, Inbox, Search, Settings, User2 } from 'lucide-react';
+import Link from 'next/link';
 import {
   Sidebar,
   SidebarContent,
@@ -24,51 +25,51 @@ const items = {
   "admin": [
     {
         title: 'Inicio',
-        url: '#dashboard',
+        url: '/dashboard',
         icon: Home,
       },
       {
         title: 'Usuarios',
-        url: '#users',
+        url: '/users',
         icon: Inbox,
       },
       {
         title: 'Proyectos',
-        url: '#projects',
+        url: '/projects',
         icon: Calendar,
       },
       {
         title: 'Tareas',
-        url: '#tasks',
+        url: '/tasks',
         icon: Search,
       },
   ],
   "projectManager": [
     {
         title: 'Inicio',
-        url: '#dashboard',
+        url: '/dashboard',
         icon: Home,
       },
       {
         title: 'Proyectos',
-        url: '#projects',
+        url: '/projects',
         icon: Calendar,
       },
       {
         title: 'Tareas',
-        url: '#tasks',
+        url: '/tasks',
         icon: Search,
       },
   ],
   "collaborator": [
     {
         title: 'Inicio',
-        url: '#dashboard',
+        url: '/dashboard',
         icon: Home,
       },
       {
         title: 'Tareas',
-        url: '#tasks',
+        url: '/tasks',
         icon: Search,
       },
   ]
@@ -91,10 +92,10 @@ export function AppSidebar() {
               {items.admin.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
