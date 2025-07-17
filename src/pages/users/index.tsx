@@ -5,8 +5,10 @@ import Modal from '@/components/Molecules/Modal';
 import UserForm from '@/components/Molecules/UserForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { getRole, withAuth } from "@/lib/utils";
 
-// Datos fake para usuarios
+export const getServerSideProps = withAuth()
+
 const usersData = [
   {
     id: 1,
@@ -46,7 +48,6 @@ const usersData = [
   }
 ];
 
-// Configuración de columnas para la tabla de usuarios
 const userColumns: Column[] = [
   {
     key: 'user',
@@ -112,19 +113,16 @@ export default function UsersPage() {
 
   const handleCreateUser = () => {
     console.log('Crear usuario:', userFormData);
-    // Aquí iría la lógica para crear el usuario
     setIsCreateModalOpen(false);
   };
 
   const handleUpdateUser = () => {
     console.log('Actualizar usuario:', userFormData);
-    // Aquí iría la lógica para actualizar el usuario
     setIsEditModalOpen(false);
   };
 
   const handleConfirmDelete = () => {
     console.log('Eliminar usuario:', selectedUser);
-    // Aquí iría la lógica para eliminar el usuario
     setIsDeleteModalOpen(false);
   };
 
@@ -155,7 +153,6 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* Modal Crear Usuario */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -170,7 +167,6 @@ export default function UsersPage() {
         />
       </Modal>
 
-      {/* Modal Editar Usuario */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -186,7 +182,6 @@ export default function UsersPage() {
         />
       </Modal>
 
-      {/* Modal Eliminar Usuario */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

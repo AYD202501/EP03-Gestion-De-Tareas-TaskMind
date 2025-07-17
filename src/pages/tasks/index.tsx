@@ -5,8 +5,10 @@ import Modal from '@/components/Molecules/Modal';
 import TaskForm from '@/components/Molecules/TaskForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { withAuth } from "@/lib/utils";
 
-// Datos fake para tareas
+export const getServerSideProps = withAuth()
+
 const initialTasks = [
   {
     id: '1',
@@ -177,7 +179,6 @@ export default function TasksPage() {
         </div>
       </div>
 
-      {/* Modal Crear Tarea */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

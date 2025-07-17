@@ -5,8 +5,11 @@ import Modal from '@/components/Molecules/Modal';
 import ProjectForm from '@/components/Molecules/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { withAuth } from "@/lib/utils";
 
-// Datos fake para proyectos
+export const getServerSideProps = withAuth()
+
+
 const projectsData = [
   {
     id: 1,
@@ -54,7 +57,6 @@ const projectsData = [
   }
 ];
 
-// Configuración de columnas para la tabla de proyectos
 const projectColumns: Column[] = [
   {
     key: 'name',
@@ -125,19 +127,16 @@ export default function ProjectsPage() {
 
   const handleCreateProject = () => {
     console.log('Crear proyecto:', projectFormData);
-    // Aquí iría la lógica para crear el proyecto
     setIsCreateModalOpen(false);
   };
 
   const handleUpdateProject = () => {
     console.log('Actualizar proyecto:', projectFormData);
-    // Aquí iría la lógica para actualizar el proyecto
     setIsEditModalOpen(false);
   };
 
   const handleConfirmDelete = () => {
     console.log('Eliminar proyecto:', selectedProject);
-    // Aquí iría la lógica para eliminar el proyecto
     setIsDeleteModalOpen(false);
   };
 
@@ -168,7 +167,6 @@ export default function ProjectsPage() {
         />
       </div>
 
-      {/* Modal Crear Proyecto */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -183,7 +181,6 @@ export default function ProjectsPage() {
         />
       </Modal>
 
-      {/* Modal Editar Proyecto */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -199,7 +196,6 @@ export default function ProjectsPage() {
         />
       </Modal>
 
-      {/* Modal Eliminar Proyecto */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
