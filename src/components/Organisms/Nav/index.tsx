@@ -1,6 +1,6 @@
 import React from 'react';
 import NavTitle from '@/components/Atoms/NavTitle';
-import Buttom from '@/components/Atoms/Button';
+import Button from '@/components/Atoms/Button';
 
 const Index = () => {
   return (
@@ -17,7 +17,7 @@ const Index = () => {
         <NavTitle title='Blog' link='/' />
       </div>
       <div className=''>
-        <Buttom />
+        <Button />
       </div>
     </nav>
   );

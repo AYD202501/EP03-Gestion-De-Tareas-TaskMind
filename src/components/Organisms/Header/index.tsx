@@ -17,8 +17,7 @@ interface Props {
 
 const Index = ({ title }: Props) => (
   <header className="flex left-0 top justify-between p-4 border-b bg-gray-50 w-full shadow-lg z-10">
-
-        <SidebarTrigger />
+    <SidebarTrigger />
     <h1 className="text-lg font-bold">{title}</h1>
     <DropdownMenu>
       <DropdownMenuTrigger ><User/></DropdownMenuTrigger>
