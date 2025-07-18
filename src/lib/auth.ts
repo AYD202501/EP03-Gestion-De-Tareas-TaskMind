@@ -44,7 +44,9 @@ export function verifyToken(token: string): UserPayload {
   }
   throw new Error('Token inválido')
 }
-export function withAuth<P extends Record<string, unknown> = {}>(
+export function withAuth<
+  P extends Record<string, unknown> = Record<string, unknown>
+>(
   gssp?: GetServerSideProps<P>,
   allowedRoles: RoleKey[] = []
 ): GetServerSideProps<P & { user: UserPayload }> {

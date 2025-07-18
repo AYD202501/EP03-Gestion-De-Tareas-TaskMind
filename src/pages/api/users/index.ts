@@ -2,14 +2,23 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
-import { hash } from 'bcryptjs'
 import type { Role } from '@prisma/client'
 
 type ErrorResponse = { error: string }
 
+type UserDTO = {
+  id: string
+  user: {
+    name: string
+    image: string
+  }
+  email: string
+  role: Role
+}
+
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<any | ErrorResponse>
+  res: NextApiResponse<UserDTO[] | UserDTO | ErrorResponse>
 ) {
   switch (req.method) {
     case 'GET': {
