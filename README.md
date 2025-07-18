@@ -35,7 +35,6 @@ Recharts (Gráficos)
 
 Supabase (Base de datos)
 
-Auth0 (Autenticación y gestión de usuarios)
 
 Vercel (Despliegue)
 
