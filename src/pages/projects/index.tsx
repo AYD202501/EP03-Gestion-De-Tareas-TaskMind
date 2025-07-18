@@ -5,7 +5,7 @@ import Modal from '@/components/Molecules/Modal';
 import ProjectForm from '@/components/Molecules/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { withAuth } from "@/lib/utils";
+import { withAuth } from "@/lib/auth";
 
 export const getServerSideProps = withAuth()
 
@@ -89,8 +89,11 @@ const projectColumns: Column[] = [
     type: 'actions'
   }
 ];
+interface ProjectsPageProps {
+  user: any;
+}
 
-export default function ProjectsPage() {
+export default function ProjectsPage({ user }: ProjectsPageProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -141,7 +144,7 @@ export default function ProjectsPage() {
   };
 
   return (
-    <Layout 
+    <Layout user={user} 
       childrenTitle="Proyectos" 
       childrenSubitle="Administra los proyectos y asigna gestores"
     >

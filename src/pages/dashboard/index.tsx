@@ -3,7 +3,7 @@ import Layout from '@/components/Organisms/Layout';
 import {
   ChartConfig,
 } from "@/components/ui/chart"
-import { withAuth } from "@/lib/auth";
+import { UserPayload, withAuth } from "@/lib/auth";
 
 export const getServerSideProps = withAuth()
 
@@ -40,11 +40,12 @@ interface Props {
   user: any
 }
 
+
 export default function Index({ user }: Props) {
   const titleItems = items[user.role]
 
   return (
-  <Layout childrenTitle={titleItems.title} childrenSubitle={titleItems.subtitle}>
+  <Layout user={user} childrenTitle={titleItems.title} childrenSubitle={titleItems.subtitle}>
       <div className='bg-white  px-4 py-6 rounded-lg shadow-lg'>
         <h2 className="font-bold">Tareas por proyecto</h2>
         <h3>Distribución de tareas por estado y proyecto</h3>

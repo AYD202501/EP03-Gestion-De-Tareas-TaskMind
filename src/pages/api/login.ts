@@ -49,6 +49,8 @@ export default async function handler(
 
     const token = signToken({
       id: user.id,
+      name: null, // No se requiere nombre en el token
+      avatarUrl: null, // No se requiere avatar en el token
       email: user.email,
       role: user.role
     })

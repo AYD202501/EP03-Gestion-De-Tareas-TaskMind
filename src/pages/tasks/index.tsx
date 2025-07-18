@@ -84,7 +84,11 @@ const initialTasks = [
   }
 ];
 
-export default function TasksPage() {
+interface TasksPageProps {
+  user: any;
+}
+
+export default function TasksPage({ user }: TasksPageProps) {
   const [tasks, setTasks] = useState(initialTasks);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [taskFormData, setTaskFormData] = useState({
@@ -148,7 +152,7 @@ export default function TasksPage() {
   ];
 
   return (
-    <Layout 
+    <Layout user={user} // Aquí deberías pasar el usuario autenticado
       childrenTitle="Tareas" 
       childrenSubitle="Vista general de todas las tareas del sistema"
     >

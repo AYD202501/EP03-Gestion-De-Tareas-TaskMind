@@ -1,3 +1,7 @@
+// src/components/Organisms/Header/index.tsx
+
+import { useRouter } from 'next/router'
+import { signOut } from 'next-auth/react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,39 +9,66 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { User } from "lucide-react"
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { signOut } from 'next-auth/react';
+} from '@/components/ui/dropdown-menu'
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { User as UserIcon } from 'lucide-react'
 
-const items: Record<string, {title: string}> = {
-  Administrator: {title: 'Panel de Administración'},
-  Project_Manager: {title: 'Panel de Gestión'},
-  Colaborator: {title: 'Panel de Colaborador'},
+import type { UserPayload, RoleKey } from '@/lib/auth'
+
+const items: Record<RoleKey, { title: string }> = {
+  Administrator:   { title: 'Panel de Administración' },
+  Project_Manager: { title: 'Panel de Gestión'    },
+  Colaborator:     { title: 'Panel de Colaborador' },
 }
 
-export function Header () {
-  const role = 'Administrator'
-  const titleItems = items[role]
+interface HeaderProps {
+  user: UserPayload
+}
+
+export function Header({ user }: HeaderProps) {
+  const { role, name, email } = user
+  const router = useRouter()
+
+  const titleItem = items[role] ?? { title: '' }
+  const displayName = name ?? email
+
+  async function handleSignOut() {
+    router.push('/login')
+  }
 
   return (
-    <header className="flex left-0 top justify-between p-4 border-b bg-gray-50 w-full shadow-lg z-10">
-      <SidebarTrigger />
-      <h1 className="text-lg font-bold">{titleItems.title}</h1>
+    <header className="flex items-center justify-between p-4 border-b bg-gray-50 w-full shadow-lg z-10">
+      <SidebarTrigger className="cursor-pointer" />
+      <h1 className="text-lg font-bold">{titleItem.title}</h1>
       <DropdownMenu>
-        <DropdownMenuTrigger ><User/></DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
+          <button
+            title="Usuario"
+            aria-label="Usuario"
+            className="cursor-pointer"
+          >
+            <UserIcon className="cursor-pointer" />
+          </button>
+        </DropdownMenuTrigger>
+
         <DropdownMenuContent className="bg-white shadow-lg z-40">
-          <DropdownMenuLabel>NN</DropdownMenuLabel>
-          <DropdownMenuLabel className="text-gray-600 -mt-3">{role}</DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-gray-300"/>
-          <DropdownMenuItem className="hover:bg-gray-200 rounded-sm border-spacing-0">
+          <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-gray-600 -mt-3">
+            {role}
+          </DropdownMenuLabel>
+
+          <DropdownMenuSeparator className="bg-gray-300" />
+
+          <DropdownMenuItem className="hover:bg-gray-200 rounded-sm cursor-pointer">
             <button
-              onClick={() => signOut({ callbackUrl: `${window.location.origin}/dashboard` })}
-              className='w-full text-left'
-            >Cerrar Sesión</button>
-            </DropdownMenuItem>
+              onClick={handleSignOut}
+              className="w-full text-left cursor-pointer"
+            >
+              Cerrar Sesión
+            </button>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
   )
-};
+}

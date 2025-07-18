@@ -1,11 +1,15 @@
-import { withAuth } from "@/lib/auth";
+// src/pages/index.tsx
+import { withAuth } from '@/lib/auth'
 
-export const getServerSideProps = withAuth()
+export const getServerSideProps = withAuth(async () => {
+  return {
+    redirect: {
+      destination: '/login',
+      permanent: false,
+    },
+  }
+})
 
 export default function Index() {
-    return (
-        <div className='bg-white  px-4 py-6 rounded-lg shadow-lg'>        
-        </div>
-    );
+  return null
 }
-

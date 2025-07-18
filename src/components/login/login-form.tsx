@@ -96,7 +96,11 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className={`w-full ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                disabled={loading}
+              >
                 {loading ? 'Cargando...' : 'Iniciar Sesión'}
               </Button>
             </div>

@@ -6,8 +6,8 @@ import UserForm from '@/components/Molecules/UserForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { withAuth } from "@/lib/auth";
+import { UserPayload } from '@/lib/auth';
 
-export const getServerSideProps = withAuth()
 
 const usersData = [
   {
@@ -76,67 +76,71 @@ const userColumns: Column[] = [
   }
 ];
 
-export default function UsersPage() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [userFormData, setUserFormData] = useState({
+
+type Props = {
+  user: UserPayload
+}
+
+export const getServerSideProps = withAuth()
+
+export default function UsersPage({ user }: Props) {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen]     = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser]           = useState<any>(null)
+  const [userFormData, setUserFormData]           = useState({
     fullName: '',
     email: '',
     role: ''
-  });
+  })
 
-  const handleEdit = (user: any) => {
-    setSelectedUser(user);
+  const handleEdit = (u: any) => {
+    setSelectedUser(u)
     setUserFormData({
-      fullName: user.user.name,
-      email: user.email,
-      role: user.role
-    });
-    setIsEditModalOpen(true);
-  };
+      fullName: u.user.name,
+      email: u.email,
+      role: u.role
+    })
+    setIsEditModalOpen(true)
+  }
 
-  const handleDelete = (user: any) => {
-    setSelectedUser(user);
-    setIsDeleteModalOpen(true);
-  };
+  const handleDelete = (u: any) => {
+    setSelectedUser(u)
+    setIsDeleteModalOpen(true)
+  }
 
   const handleNewUser = () => {
-    setUserFormData({
-      fullName: '',
-      email: '',
-      role: ''
-    });
-    setIsCreateModalOpen(true);
-  };
+    setUserFormData({ fullName: '', email: '', role: '' })
+    setIsCreateModalOpen(true)
+  }
 
   const handleCreateUser = () => {
-    console.log('Crear usuario:', userFormData);
-    setIsCreateModalOpen(false);
-  };
+    console.log('Crear usuario:', userFormData)
+    setIsCreateModalOpen(false)
+  }
 
   const handleUpdateUser = () => {
-    console.log('Actualizar usuario:', userFormData);
-    setIsEditModalOpen(false);
-  };
+    console.log('Actualizar usuario:', userFormData)
+    setIsEditModalOpen(false)
+  }
 
   const handleConfirmDelete = () => {
-    console.log('Eliminar usuario:', selectedUser);
-    setIsDeleteModalOpen(false);
-  };
+    console.log('Eliminar usuario:', selectedUser)
+    setIsDeleteModalOpen(false)
+  }
 
   return (
-    <Layout 
-      childrenTitle="Usuarios" 
+    <Layout
+      user={user}                                 // <-- aquí pasamos el user
+      childrenTitle="Usuarios"
       childrenSubitle="Administra los usuarios y sus roles en el sistema"
     >
       <div className="bg-white rounded-lg shadow-lg p-6 w-full">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Gestión de Usuarios</h2>
-          </div>
-          <Button 
+          <h2 className="text-xl font-semibold text-gray-900">
+            Gestión de Usuarios
+          </h2>
+          <Button
             onClick={handleNewUser}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
@@ -144,7 +148,7 @@ export default function UsersPage() {
             Nuevo usuario
           </Button>
         </div>
-        
+
         <Table
           columns={userColumns}
           data={usersData}
@@ -153,6 +157,7 @@ export default function UsersPage() {
         />
       </div>
 
+      {/* Create Modal */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -161,12 +166,10 @@ export default function UsersPage() {
         primaryButtonText="Crear"
         onPrimaryAction={handleCreateUser}
       >
-        <UserForm
-          data={userFormData}
-          onChange={setUserFormData}
-        />
+        <UserForm data={userFormData} onChange={setUserFormData} />
       </Modal>
 
+      {/* Edit Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -178,19 +181,20 @@ export default function UsersPage() {
         <UserForm
           data={userFormData}
           onChange={setUserFormData}
-          isEditing={true}
+          isEditing
         />
       </Modal>
 
+      {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title={`¿Está seguro de eliminar el usuario "${selectedUser?.user?.name}"?`}
         subtitle="Esta acción no se puede deshacer. Se eliminará permanentemente este usuario y todos sus datos asociados."
         primaryButtonText="Continuar"
-        secondaryButtonText="Cancel"
-        onPrimaryAction={handleConfirmDelete}
+        secondaryButtonText="Cancelar"
         primaryButtonVariant="destructive"
+        onPrimaryAction={handleConfirmDelete}
       >
         <div className="py-4">
           <p className="text-sm text-gray-600">
@@ -199,5 +203,5 @@ export default function UsersPage() {
         </div>
       </Modal>
     </Layout>
-  );
-} 
+  )
+}

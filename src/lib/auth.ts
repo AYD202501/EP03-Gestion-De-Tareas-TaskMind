@@ -1,27 +1,31 @@
-import jwt, { SignOptions } from 'jsonwebtoken' // ✅ Importación por defecto con tipos
+import jwt, { SignOptions } from 'jsonwebtoken'
 import { getUserFromCookie } from '@/lib/getUserFromCookie'
-import { GetServerSideProps, GetServerSidePropsContext } from 'next'
+import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import prisma from '@/config/prisma'
 
 export type UserPayload = {
   id: string
   email: string
-  role: 'Administrator' | 'Project_Manager' | 'Colaborator'
+  role: RoleKey
+  name: string | null
+  avatarUrl: string | null
 }
 
-const envSecret = process.env.JWT_SECRET
-if (!envSecret) {
+const SECRET_KEY = process.env.JWT_SECRET!
+if (!SECRET_KEY) {
   throw new Error('JWT_SECRET no está definido')
 }
-const SECRET_KEY: string = envSecret
 
-export function signToken(user: UserPayload, expiresIn: string | number = '7d'): string {
-  const options: SignOptions = { expiresIn: expiresIn as any }
+export function signToken(
+  user: UserPayload,
+  expiresIn: jwt.SignOptions['expiresIn'] = '7d'
+): string {
+  const options: SignOptions = { expiresIn }
   return jwt.sign(user, SECRET_KEY, options)
 }
 
 export function verifyToken(token: string): UserPayload {
   const decoded = jwt.verify(token, SECRET_KEY)
-
   if (
     typeof decoded === 'object' &&
     decoded !== null &&
@@ -31,47 +35,58 @@ export function verifyToken(token: string): UserPayload {
   ) {
     return decoded as UserPayload
   }
-
   throw new Error('Token inválido')
 }
 
 export type RoleKey = 'Administrator' | 'Project_Manager' | 'Colaborator'
 
-// Función que retorna un GetServerSideProps con autenticación
 export function withAuth(
   gssp?: GetServerSideProps,
-  allowedRoles?: RoleKey[]
+  allowedRoles: RoleKey[] = []
 ): GetServerSideProps {
-  return async (ctx: GetServerSidePropsContext) => {
-    const user = getUserFromCookie(ctx.req)
+  return async (
+    ctx: GetServerSidePropsContext
+  ): Promise<GetServerSidePropsResult<Record<string, any>>> => {
+    const tokenUser = getUserFromCookie(ctx.req)
+    if (!tokenUser) {
+      return { redirect: { destination: '/login', permanent: false } }
+    }
 
-    // Verificar si el usuario está autenticado
-    if (!user) {
-      return {
-        redirect: {
-          destination: '/login',
-          permanent: false,
-        },
-      }
+    const dbUser = await prisma.user.findUnique({
+      where: { id: tokenUser.id },
+      include: { profile: true }
+    })
+    if (!dbUser) {
+      return { redirect: { destination: '/login', permanent: false } }
+    }
+
+    const user: UserPayload = {
+      id: dbUser.id,
+      email: dbUser.email,
+      role: dbUser.role,
+      name: dbUser.name ?? null,
+      avatarUrl: dbUser.profile?.avatarUrl ?? null
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+      return { redirect: { destination: '/unauthorized', permanent: false } }
     }
 
     if (gssp) {
       const result = await gssp(ctx)
-      
       if ('props' in result) {
         return {
           props: {
             ...result.props,
             user,
-          },
+          }
         }
       }
-      
       return result
     }
 
     return {
-      props: { user },
+      props: { user }
     }
   }
 }
