@@ -12,16 +12,17 @@ import { Plus } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 type ProjectItem = {
-  id:          string
-  name:        string
-  description: string | null
-  assignedToId: string
-  assignedToName:  string | null
-  createdAt:   string
+  id:             string
+  name:           string
+  description:    string | null
+  assignedToId:   string       // para el form de edición/creación
+  assignedToName: string       // para mostrar el nombre en la tabla
+  createdAt:      string       // ya formateado como DD/MM/AAAA
 }
 
 export const getServerSideProps = withAuth(
   async () => {
+    // 1) Traemos proyectos con su relación assignedTo
     const projs = await prisma.project.findMany({
       include: {
         assignedTo: {
@@ -34,33 +35,39 @@ export const getServerSideProps = withAuth(
       }
     })
 
-    // Listamos usuarios para el <Select> de responsables
+    // 2) Cargamos lista de usuarios para el <Select> de responsables
     const users = await prisma.user.findMany({
       include: { profile: { select: { avatarUrl: true } } }
     })
 
+    // 3) Mappeamos al shape que queremos en la página
+    const initialProjects: ProjectItem[] = projs.map(p => ({
+      id:             p.id,
+      name:           p.name,
+      description:    p.description,
+      assignedToId:   p.assignedTo?.id ?? '',       // si no hay asignado, queda vacío
+      assignedToName: p.assignedTo?.name ?? '—',     // si no hay asignado, mostramos un guión
+      createdAt:      (() => {
+        const d   = p.createdAt
+        const dd  = String(d.getDate()).padStart(2, '0')
+        const mm  = String(d.getMonth() + 1).padStart(2, '0')
+        const yyyy = d.getFullYear()
+        return `${dd}/${mm}/${yyyy}`
+      })(),
+    }))
+
+    const userList: UserPayload[] = users.map(u => ({
+      id:        u.id,
+      email:     u.email,
+      role:      u.role,
+      name:      u.name,
+      avatarUrl: u.profile?.avatarUrl ?? null
+    }))
+
     return {
       props: {
-        initialProjects: projs.map(p => ({
-          id:          p.id,
-          name:        p.name,
-          description: p.description,
-          assignedToName: p.assignedTo?.name ?? '',
-          createdAt:  (() => {
-            const d = p.createdAt
-            const dd = String(d.getDate()).padStart(2, '0')
-            const mm = String(d.getMonth() + 1).padStart(2, '0')
-            const yyyy = d.getFullYear()
-            return `${dd}/${mm}/${yyyy}`
-          })(),
-        })),
-        users: users.map(u => ({
-          id:        u.id,
-          name:      u.name,
-          email:     u.email,
-          role:      u.role,
-          avatarUrl: u.profile?.avatarUrl ?? null
-        })),
+        initialProjects,
+        users: userList
       }
     }
   },
@@ -86,6 +93,7 @@ export default function ProjectsPage({
   })
   const { toast } = useToast()
 
+  // Pone el form en blanco o con los valores del proyecto "p"
   const resetForm = (p?: ProjectItem) => {
     if (p) {
       setForm({
@@ -95,7 +103,7 @@ export default function ProjectsPage({
       })
       setSelected(p)
     } else {
-      setForm({ name: '', description: '', assignedToId: '' })
+      setForm({ name:'', description:'', assignedToId:'' })
       setSelected(null)
     }
   }
@@ -130,9 +138,17 @@ export default function ProjectsPage({
       return toast({ title: 'Error', description: err.error })
     }
     setProjects(prev =>
-      prev.map(x => x.id === selected.id
-        ? { ...x, ...form, assignedToName: x.assignedToName }
-        : x
+      prev.map(x =>
+        x.id === selected.id
+          ? {
+              ...x,
+              name:           form.name,
+              description:    form.description,
+              assignedToId:   form.assignedToId,
+              assignedToName: // volvemos a tomar el nombre del `users` list
+                users.find(u => u.id === form.assignedToId)?.name ?? '—',
+            }
+          : x
       )
     )
     setModal(null)
@@ -153,11 +169,11 @@ export default function ProjectsPage({
   }
 
   const columns: Column<ProjectItem>[] = [
-    { key: 'name',       label: 'Proyecto',    type: 'text'   },
-    { key: 'assignedToName', label: 'Responsable', type: 'text' },
-    { key: 'description',label: 'Descripción', type: 'text'   },
-    { key: 'createdAt',  label: 'Creado',      type: 'text'   },
-    { key: 'actions',    label: 'Acciones',    type: 'actions'}
+    { key:'name',           label:'Proyecto',    type:'text'   },
+    { key:'assignedToName', label:'Responsable', type:'text'   },
+    { key:'description',    label:'Descripción', type:'text'   },
+    { key:'createdAt',      label:'Creado',      type:'text'   },
+    { key:'actions',        label:'Acciones',    type:'actions'}
   ]
 
   return (
@@ -175,15 +191,15 @@ export default function ProjectsPage({
         <Table<ProjectItem>
           columns={columns}
           data={projects}
-          onEdit={p => { resetForm(p); setModal('edit') }}
-          onDelete={p => { resetForm(p); setModal('delete') }}
+          onEdit={p    => { resetForm(p);    setModal('edit') }}
+          onDelete={p  => { resetForm(p);    setModal('delete') }}
         />
       </section>
 
-      {/* Create Modal */}
+      {/* Modal Crear */}
       <Modal
-        isOpen={modal === 'create'}
-        onClose={() => setModal(null)}
+        isOpen={modal==='create'}
+        onClose={()=>setModal(null)}
         title="Crear Proyecto"
         subtitle="Rellena el formulario"
         primaryButtonText="Crear"
@@ -192,10 +208,10 @@ export default function ProjectsPage({
         <ProjectForm data={form} onChange={setForm} users={users} />
       </Modal>
 
-      {/* Edit Modal */}
+      {/* Modal Editar */}
       <Modal
-        isOpen={modal === 'edit'}
-        onClose={() => setModal(null)}
+        isOpen={modal==='edit'}
+        onClose={()=>setModal(null)}
         title="Editar Proyecto"
         subtitle="Actualiza los datos"
         primaryButtonText="Actualizar"
@@ -204,10 +220,10 @@ export default function ProjectsPage({
         <ProjectForm data={form} onChange={setForm} users={users} />
       </Modal>
 
-      {/* Delete Modal */}
+      {/* Modal Eliminar */}
       <Modal
-        isOpen={modal === 'delete'}
-        onClose={() => setModal(null)}
+        isOpen={modal==='delete'}
+        onClose={()=>setModal(null)}
         title={`Eliminar proyecto "${selected?.name}"?`}
         subtitle="Esta acción no se puede deshacer."
         primaryButtonText="Eliminar"
