@@ -1,87 +1,41 @@
-import React, { useState } from 'react';
-import Layout from '@/components/Organisms/Layout';
-import Table, { Column } from '@/components/Molecules/Table';
-import Modal from '@/components/Molecules/Modal';
-import UserForm from '@/components/Molecules/UserForm';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { withAuth } from "@/lib/auth";
-import { UserPayload } from '@/lib/auth';
+// src/pages/users/index.tsx
 
-
-const usersData = [
-  {
-    id: 1,
-    user: {
-      name: "Pablo Ramos",
-      image: "/avatar1.jpg"
-    },
-    email: "juanp.ramos@udea.edu.co",
-    role: "Administrador"
-  },
-  {
-    id: 2,
-    user: {
-      name: "Ana Granada",
-      image: "/avatar2.jpg"
-    },
-    email: "ana.granadal@udea.edu.co",
-    role: "Colaborador"
-  },
-  {
-    id: 3,
-    user: {
-      name: "Simon Correa",
-      image: "/avatar3.jpg"
-    },
-    email: "l.messi@udea.edu.co",
-    role: "Colaborador"
-  },
-  {
-    id: 4,
-    user: {
-      name: "Jesús Torres",
-      image: "/avatar4.jpg"
-    },
-    email: "jesus.torresq@udea.edu.co",
-    role: "Gestor"
-  }
-];
-
-const userColumns: Column[] = [
-  {
-    key: 'user',
-    label: 'Usuario',
-    type: 'avatar'
-  },
-  {
-    key: 'email',
-    label: 'Email',
-    type: 'text'
-  },
-  {
-    key: 'role',
-    label: 'Rol',
-    type: 'badge',
-    badgeColors: {
-      'Administrador': 'bg-purple-100 text-purple-800',
-      'Gestor': 'bg-blue-100 text-blue-800',
-      'Colaborador': 'bg-gray-100 text-gray-800'
-    }
-  },
-  {
-    key: 'actions',
-    label: 'Acciones',
-    type: 'actions'
-  }
-];
-
+import React, { useState } from 'react'
+import Layout from '@/components/Organisms/Layout'
+import Table, { Column } from '@/components/Molecules/Table'
+import Modal from '@/components/Molecules/Modal'
+import UserForm from '@/components/Molecules/UserForm'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import { withAuth, UserPayload } from '@/lib/auth'
+import type { GetServerSideProps } from 'next'
 
 type Props = {
   user: UserPayload
 }
 
-export const getServerSideProps = withAuth()
+// Primero autenticamos, luego chequeamos el rol
+export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
+  const authResult = await withAuth()(ctx)
+  if ('redirect' in authResult) {
+    return authResult
+  }
+
+  if (!('props' in authResult)) {
+    return authResult
+  }
+  const { user } = authResult.props as { user: UserPayload }
+  if (user.role !== 'Administrator') {
+    return {
+      redirect: {
+        destination: '/dashboard?unauthorized=true',
+        permanent: false,
+      },
+    }
+  }
+
+  return { props: { user } }
+}
 
 export default function UsersPage({ user }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -93,6 +47,49 @@ export default function UsersPage({ user }: Props) {
     email: '',
     role: ''
   })
+
+  const usersData = [
+    {
+      id: 1,
+      user: { name: 'Pablo Ramos',  image: '/avatar1.jpg' },
+      email: 'juanp.ramos@udea.edu.co',
+      role: 'Administrador'
+    },
+    {
+      id: 2,
+      user: { name: 'Ana Granada', image: '/avatar2.jpg' },
+      email: 'ana.granadal@udea.edu.co',
+      role: 'Colaborador'
+    },
+    {
+      id: 3,
+      user: { name: 'Simon Correa', image: '/avatar3.jpg' },
+      email: 'l.messi@udea.edu.co',
+      role: 'Colaborador'
+    },
+    {
+      id: 4,
+      user: { name: 'Jesús Torres', image: '/avatar4.jpg' },
+      email: 'jesus.torresq@udea.edu.co',
+      role: 'Gestor'
+    }
+  ]
+
+  const userColumns: Column[] = [
+    { key: 'user',    label: 'Usuario', type: 'avatar' },
+    { key: 'email',   label: 'Email',   type: 'text'   },
+    {
+      key: 'role',
+      label: 'Rol',
+      type: 'badge',
+      badgeColors: {
+        Administrador: 'bg-purple-100 text-purple-800',
+        Gestor:        'bg-blue-100   text-blue-800',
+        Colaborador:   'bg-gray-100   text-gray-800',
+      }
+    },
+    { key: 'actions', label: 'Acciones', type: 'actions' }
+  ]
 
   const handleEdit = (u: any) => {
     setSelectedUser(u)
@@ -131,7 +128,7 @@ export default function UsersPage({ user }: Props) {
 
   return (
     <Layout
-      user={user}                                 // <-- aquí pasamos el user
+      user={user}
       childrenTitle="Usuarios"
       childrenSubitle="Administra los usuarios y sus roles en el sistema"
     >
@@ -144,8 +141,7 @@ export default function UsersPage({ user }: Props) {
             onClick={handleNewUser}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo usuario
+            <Plus className="h-4 w-4 mr-2" /> Nuevo usuario
           </Button>
         </div>
 
@@ -189,7 +185,7 @@ export default function UsersPage({ user }: Props) {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title={`¿Está seguro de eliminar el usuario "${selectedUser?.user?.name}"?`}
+        title={`¿Está seguro de eliminar al usuario "${selectedUser?.user?.name}"?`}
         subtitle="Esta acción no se puede deshacer. Se eliminará permanentemente este usuario y todos sus datos asociados."
         primaryButtonText="Continuar"
         secondaryButtonText="Cancelar"

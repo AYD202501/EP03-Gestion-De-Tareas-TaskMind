@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { User as UserIcon } from 'lucide-react'
-
+import { useToast } from '@/components/ui/use-toast'
 import type { UserPayload, RoleKey } from '@/lib/auth'
 
 const items: Record<RoleKey, { title: string }> = {
   Administrator:   { title: 'Panel de Administración' },
-  Project_Manager: { title: 'Panel de Gestión'    },
+  Project_Manager: { title: 'Panel del Gestor'    },
   Colaborator:     { title: 'Panel de Colaborador' },
 }
 
@@ -28,12 +28,17 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const { role, name, email } = user
   const router = useRouter()
-
+  const { toast } = useToast()
   const titleItem = items[role] ?? { title: '' }
   const displayName = name ?? email
 
   async function handleSignOut() {
-    router.push('/login')
+    await fetch('/api/logout.ts', { method: 'POST' })
+    toast({
+      title: 'Sesión cerrada',
+      description: 'Debes iniciar sesión de nuevo',
+    })
+    router.replace('/login')
   }
 
   return (

@@ -1,13 +1,22 @@
-import { parse } from 'cookie'
-import { verifyToken } from './auth'
+// src/lib/getUserFromCookie.ts
 
-export function getUserFromCookie(req: any) {
-  const { auth_token } = parse(req.headers.cookie || '')
-  if (!auth_token) return null
+import type { IncomingMessage } from 'http'
+import { parse } from 'cookie'
+import { verifyToken, UserPayload } from './auth'
+
+export function getUserFromCookie(
+  req: IncomingMessage & { headers: { cookie?: string } }
+): UserPayload | null {
+  // Parseamos todas las cookies
+  const cookies = parse(req.headers.cookie || '')
+  const token = cookies['auth_token']
+  if (!token) return null
 
   try {
-    return verifyToken(auth_token)
-  } catch {
+    // Verificamos y retornamos el payload
+    return verifyToken(token)
+  } catch (err) {
+    console.error('Error al verificar JWT:', err)
     return null
   }
 }
