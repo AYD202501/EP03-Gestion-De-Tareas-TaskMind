@@ -1,3 +1,10 @@
+## Integrantes del proyecto
+
+Simon Correa Rios - 1033179644
+Ana Maria Granada Rodas - 1000758426
+Juan Pablo Ramos Vélez - 1193518347 
+Jesus Estiven Torres Quintero - 1000759253
+
 ## TaskMind – Sistema de Gestión de Tareas
 TaskMind es una plataforma web enfocada en la gestión eficiente de tareas y proyectos colaborativos, diseñada para optimizar el trabajo en equipo. Permite a los usuarios gestionar tareas, asignarlas, priorizarlas, seguir su avance en tiempo real y administrar proyectos desde un mismo espacio.
 
