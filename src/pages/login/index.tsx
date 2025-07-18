@@ -2,26 +2,9 @@
 import React from 'react'
 import Login from '@/components/login/login-form'
 import Image from 'next/image'
-import { getUserFromCookie } from '@/lib/getUserFromCookie'
-import { GetServerSideProps } from 'next'
-import prisma from '@/config/prisma'
+import { withGuestOnly } from "@/lib/auth";
 
-export function withGuestOnly(): GetServerSideProps {
-  return async (ctx) => {
-    const tokenUser = getUserFromCookie(ctx.req)
-    if (tokenUser) {
-      const dbUser = await prisma.user.findUnique({
-      where: { id: tokenUser.id },
-      include: { profile: true }
-    })
-      if (dbUser) {
-        return { redirect: { destination: '/login', permanent: false } }
-      }
-    }    
-
-    return { props: {} }
-  }
-}
+export const getServerSideProps = withGuestOnly()
 
 const LoginPage: React.FC = () => {
   return (
