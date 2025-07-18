@@ -1,34 +1,52 @@
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Formulario para crear o editar tareas
 
+import React from 'react'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+/** 
+ * Estructura de los datos que maneja el formulario 
+ */
 interface TaskFormData {
-  title: string;
-  description: string;
-  project: string;
-  assignedTo: string;
-  dueDate: string;
-  category: string;
-  tags: string;
+  title: string
+  description: string
+  project: string
+  assignedTo: string
+  dueDate: string
+  category: string
+  tags: string
 }
 
+/**
+ * Props del TaskForm:
+ * - data: valores actuales del formulario
+ * - onChange: función para actualizar los datos
+ */
 interface TaskFormProps {
-  data: TaskFormData;
-  onChange: (data: TaskFormData) => void;
+  data: TaskFormData
+  onChange: (data: TaskFormData) => void
 }
 
+/**
+ * TaskForm:
+ * Componente de formulario usado para ingresar o editar la información de una tarea.
+ */
 const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
+
+  // Función auxiliar para actualizar un campo del formulario
   const handleChange = (field: keyof TaskFormData, value: string) => {
     onChange({
       ...data,
       [field]: value
-    });
-  };
+    })
+  }
 
   return (
     <div className="space-y-4">
+
+      {/* Campo: Título de la tarea */}
       <div>
         <Label htmlFor="title">Título</Label>
         <Input
@@ -38,7 +56,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           placeholder="Título de la tarea"
         />
       </div>
-      
+
+      {/* Campo: Descripción de la tarea */}
       <div>
         <Label htmlFor="description">Descripción</Label>
         <Textarea
@@ -49,7 +68,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           rows={3}
         />
       </div>
-      
+
+      {/* Campo: Selección del proyecto al que pertenece la tarea */}
       <div>
         <Label htmlFor="project">Proyecto</Label>
         <Select value={data.project} onValueChange={(value) => handleChange('project', value)}>
@@ -64,7 +84,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           </SelectContent>
         </Select>
       </div>
-      
+
+      {/* Campo: Selección del responsable asignado */}
       <div>
         <Label htmlFor="assignedTo">Asignar a</Label>
         <Select value={data.assignedTo} onValueChange={(value) => handleChange('assignedTo', value)}>
@@ -80,7 +101,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           </SelectContent>
         </Select>
       </div>
-      
+
+      {/* Campo: Fecha límite de la tarea */}
       <div>
         <Label htmlFor="dueDate">Fecha límite</Label>
         <Input
@@ -90,7 +112,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           onChange={(e) => handleChange('dueDate', e.target.value)}
         />
       </div>
-      
+
+      {/* Campo: Categoría de la tarea */}
       <div>
         <Label htmlFor="category">Categoría</Label>
         <Select value={data.category} onValueChange={(value) => handleChange('category', value)}>
@@ -106,7 +129,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           </SelectContent>
         </Select>
       </div>
-      
+
+      {/* Campo: Etiquetas (tags) de la tarea */}
       <div>
         <Label htmlFor="tags">Etiquetas</Label>
         <Select value={data.tags} onValueChange={(value) => handleChange('tags', value)}>
@@ -123,8 +147,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           </SelectContent>
         </Select>
       </div>
-    </div>
-  );
-};
 
-export default TaskForm; 
+    </div>
+  )
+}
+
+export default TaskForm

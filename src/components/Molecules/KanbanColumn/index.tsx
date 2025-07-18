@@ -1,53 +1,72 @@
-import React from 'react';
-import TaskCard from '@/components/Molecules/TaskCard';
+// Importa React y el componente TaskCard
+import React from 'react'
+import TaskCard from '@/components/Molecules/TaskCard'
 
+// Define el tipo Task que representa una tarea individual
 interface Task {
-  id: string;
-  title: string;
-  description: string;
-  status: string;
-  dueDate: string;
+  id: string
+  title: string
+  description: string
+  status: string
+  dueDate: string
   assignedTo: {
-    name: string;
-    initials: string;
-    image?: string;
-  };
+    name: string
+    initials: string
+    image?: string
+  }
 }
 
+// Define las props esperadas por el componente KanbanColumn
 interface KanbanColumnProps {
-  title: string;
-  status: string;
-  tasks: Task[];
-  onStatusChange: (taskId: string, newStatus: string) => void;
+  title: string                        // Título de la columna (ej. "Pendiente")
+  status: string                       // Estado representado por la columna
+  tasks: Task[]                        // Lista de tareas mostradas en la columna
+  onStatusChange: (taskId: string, newStatus: string) => void // Función para cambiar el estado de una tarea
 }
 
+/**
+ * KanbanColumn:
+ * Molécula que representa una columna del tablero Kanban.
+ * Muestra tareas filtradas por estado dentro de una tarjeta visual.
+ */
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ title, status, tasks, onStatusChange }) => {
+  
+  // Función para obtener el color asociado al estado de la columna
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Pendiente':
-        return 'bg-yellow-500';
+        return 'bg-yellow-500'
       case 'En progreso':
-        return 'bg-blue-500';
+        return 'bg-blue-500'
       case 'En Revisión':
-        return 'bg-purple-500';
+        return 'bg-purple-500'
       case 'Completado':
-        return 'bg-green-500';
+        return 'bg-green-500'
       default:
-        return 'bg-gray-500';
+        return 'bg-gray-500'
     }
-  };
+  }
 
   return (
     <div className="flex-1 min-w-0">
+      {/* Contenedor visual de la columna */}
       <div className="bg-gray-50 rounded-lg p-4 h-full">
+        
+        {/* Encabezado de la columna */}
         <div className="flex items-center gap-2 mb-4">
+          {/* Indicador de color según el estado */}
           <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
+          
+          {/* Título de la columna */}
           <h3 className="font-semibold text-gray-900">{title}</h3>
+          
+          {/* Cantidad de tareas en la columna */}
           <span className="ml-auto bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full">
             {tasks.length}
           </span>
         </div>
         
+        {/* Renderiza cada tarea como una TaskCard */}
         <div className="space-y-3">
           {tasks.map((task) => (
             <TaskCard
@@ -57,9 +76,11 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ title, status, tasks, onSta
             />
           ))}
         </div>
+
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default KanbanColumn; 
+// Exporta el componente para ser utilizado en el tablero Kanban
+export default KanbanColumn

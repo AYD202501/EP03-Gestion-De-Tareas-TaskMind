@@ -1,8 +1,10 @@
-// src/components/Molecules/app-sidebar/index.tsx
+// Importa componentes necesarios para el sidebar, íconos y tipos
 import Image from 'next/image'
 import type { ComponentType, SVGProps } from 'react'
 import { Calendar, Home, Inbox, Search } from 'lucide-react'
 import Link from 'next/link'
+
+// Importa componentes UI personalizados para construir el sidebar
 import {
   Sidebar,
   SidebarContent,
@@ -14,10 +16,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import type { UserPayload, RoleKey } from '@/lib/auth'
 
-/** Mapa de roles a items de menú */
+/**
+ * Define el menú de navegación según el rol del usuario.
+ * Cada rol tiene acceso a diferentes secciones del sistema.
+ */
 const menuMap: Record<
   RoleKey,
   { title: string; url: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[]
@@ -39,15 +45,21 @@ const menuMap: Record<
   ],
 }
 
+// Define las props que espera recibir el Sidebar
 interface AppSidebarProps {
-  user: UserPayload
+  user: UserPayload  // Datos del usuario actual
 }
 
+/**
+ * Componente AppSidebar:
+ * Molécula que renderiza el menú lateral izquierdo según el rol del usuario.
+ * Incluye el logo, las opciones de navegación y un resumen del usuario en el pie.
+ */
 export function AppSidebar({ user }: AppSidebarProps) {
-  // Seleccionamos los ítems de menú según el rol
+  // Selecciona el menú según el rol del usuario
   const menuItems = menuMap[user.role] ?? []
 
-  // Iniciales para el avatar fallback
+  // Genera las iniciales del usuario si no tiene avatar
   const initials = user.name
     ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
     : user.email[0].toUpperCase()
@@ -55,8 +67,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
   return (
     <Sidebar className="z-40 w-64">
       <SidebarContent>
-        {/* Logo */}
+        {/* Grupo superior: logo y menú */}
         <SidebarGroup className="flex items-center justify-center">
+          {/* Muestra el logo de la aplicación */}
           <SidebarGroupLabel>
             <div className="mt-20">
               <Image
@@ -69,7 +82,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
             </div>
           </SidebarGroupLabel>
 
-          {/* Menú */}
+          {/* Renderiza el menú dinámico */}
           <SidebarGroupContent className="mt-20">
             <SidebarMenu className="gap-2 w-full flex flex-col">
               {menuItems.map(item => (
@@ -90,11 +103,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer con datos del user */}
+      {/* Pie del sidebar con la información del usuario */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="pb-5 flex items-center space-x-2 px-4">
+              {/* Muestra el avatar del usuario o sus iniciales */}
               <Avatar>
                 {user.avatarUrl ? (
                   <AvatarImage
@@ -107,6 +121,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   </AvatarFallback>
                 )}
               </Avatar>
+              {/* Nombre y correo del usuario */}
               <div className="text-sm leading-tight">
                 <p>{user.name ?? user.email}</p>
                 <p className="text-xs text-gray-500">{user.email}</p>

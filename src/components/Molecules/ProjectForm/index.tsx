@@ -1,3 +1,4 @@
+// Importa React y componentes de la interfaz de usuario
 import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -10,30 +11,42 @@ import {
 } from '@/components/ui/select'
 import type { UserPayload } from '@/lib/auth'
 
-/** Forma de datos que maneja el formulario de Proyecto */
+/** 
+ * ProjectFormData:
+ * Estructura de los datos que maneja el formulario.
+ */
 export interface ProjectFormData {
-  name: string
-  description: string
-  assignedToId: string
+  name: string            // Nombre del proyecto
+  description: string     // Breve descripción del proyecto
+  assignedToId: string    // ID del usuario responsable del proyecto
 }
 
+// Define las props que recibe el formulario de proyecto
 interface ProjectFormProps {
-  data: ProjectFormData
-  onChange: (data: ProjectFormData) => void
-  /** Lista de usuarios para asignar */
-  users?: UserPayload[]
+  data: ProjectFormData                         // Datos actuales del formulario
+  onChange: (data: ProjectFormData) => void     // Función para actualizar el estado del formulario
+  users?: UserPayload[]                         // Lista de usuarios para asignar (opcional)
 }
 
+/**
+ * ProjectForm:
+ * Componente de formulario para crear o editar un proyecto.
+ * Permite ingresar nombre, descripción y seleccionar un usuario responsable.
+ */
 export default function ProjectForm({
   data,
   onChange,
   users = [],
 }: ProjectFormProps) {
+
+  // Actualiza el campo correspondiente cuando cambia su valor
   const handleChange = (field: keyof ProjectFormData, value: string) =>
     onChange({ ...data, [field]: value })
 
   return (
     <div className="space-y-4">
+
+      {/* Campo: Nombre del proyecto */}
       <div>
         <Label htmlFor="name">Nombre del proyecto</Label>
         <Input
@@ -44,6 +57,7 @@ export default function ProjectForm({
         />
       </div>
 
+      {/* Campo: Descripción del proyecto */}
       <div>
         <Label htmlFor="description">Descripción</Label>
         <Input
@@ -54,6 +68,7 @@ export default function ProjectForm({
         />
       </div>
 
+      {/* Campo: Selección del usuario responsable */}
       <div>
         <Label htmlFor="assignedToId">Responsable</Label>
         <Select
@@ -72,6 +87,7 @@ export default function ProjectForm({
           </SelectContent>
         </Select>
       </div>
+      
     </div>
   )
 }

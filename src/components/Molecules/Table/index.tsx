@@ -1,32 +1,57 @@
-import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Trash2 } from 'lucide-react';
+// Importa React y componentes UI necesarios
+import React from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Edit, Trash2 } from 'lucide-react'
 
+/**
+ * Column:
+ * Define cómo debe renderizarse cada columna de la tabla.
+ * - key: clave del dato en los objetos del arreglo.
+ * - label: título visible de la columna.
+ * - type: tipo de dato ('text', 'avatar', 'badge' o 'actions').
+ * - badgeColors: (opcional) estilos según el valor del badge.
+ */
 export interface Column<T> {
-  key: keyof T | 'actions';
-  label: string;
-  type: 'text' | 'avatar' | 'badge' | 'actions';
+  key: keyof T | 'actions'
+  label: string
+  type: 'text' | 'avatar' | 'badge' | 'actions'
   badgeColors?: {
-    [key: string]: string;
-  };
+    [key: string]: string
+  }
 }
 
+/**
+ * TableProps:
+ * Define las propiedades del componente Table.
+ * - columns: estructura de las columnas.
+ * - data: lista de objetos que se mostrarán.
+ * - onEdit, onDelete: funciones para manejar botones de acción.
+ */
 export interface TableProps<T> {
-  columns: Column<T>[];
-  data: T[];
-  onEdit?: (item: T) => void;
-  onDelete?: (item: T) => void;
+  columns: Column<T>[]
+  data: T[]
+  onEdit?: (item: T) => void
+  onDelete?: (item: T) => void
 }
 
+/**
+ * Table:
+ * Componente genérico para renderizar tablas dinámicas.
+ * Admite texto, badges, avatares y botones de acciones.
+ */
 function Table<T>({
   columns,
   data,
   onEdit,
   onDelete,
 }: TableProps<T>) {
+
+  // Renderiza una celda según el tipo definido en la columna
   const renderCell = (item: T, column: Column<T>) => {
+
+    // Si la columna es de acciones, renderiza botones
     if (column.key === 'actions') {
       return (
         <div className="flex items-center gap-2">
@@ -51,13 +76,16 @@ function Table<T>({
             </Button>
           )}
         </div>
-      );
+      )
     }
-    const value = item[column.key];
-    switch (column.type) {
-      case 'avatar':
-        const user = value as { name?: string; image?: string };
 
+    const value = item[column.key]
+
+    // Renderiza según el tipo de la columna
+    switch (column.type) {
+
+      case 'avatar':
+        const user = value as { name?: string; image?: string }
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
@@ -68,16 +96,16 @@ function Table<T>({
             </Avatar>
             <span className="font-medium">{user.name}</span>
           </div>
-        );
+        )
 
       case 'badge':
-        const val = value as string;
-        const color = column.badgeColors?.[val] || 'bg-gray-100 text-gray-800';
+        const val = value as string
+        const color = column.badgeColors?.[val] || 'bg-gray-100 text-gray-800'
         return (
           <Badge className={color}>
             {val}
           </Badge>
-        );
+        )
 
       case 'actions':
         return (
@@ -103,16 +131,18 @@ function Table<T>({
               </Button>
             )}
           </div>
-        );
+        )
 
       default:
-        return <span>{String(value)}</span>;
+        return <span>{String(value)}</span>
     }
-  };
+  }
 
   return (
     <div className="rounded-md border">
       <table className="w-full">
+
+        {/* Encabezados de la tabla */}
         <thead className="border-b bg-gray-50">
           <tr>
             {columns.map((column) => (
@@ -125,6 +155,8 @@ function Table<T>({
             ))}
           </tr>
         </thead>
+
+        {/* Filas de la tabla */}
         <tbody className="divide-y divide-gray-200">
           {data.map((item, index) => (
             <tr key={index} className="hover:bg-gray-50">
@@ -139,9 +171,11 @@ function Table<T>({
             </tr>
           ))}
         </tbody>
+
       </table>
     </div>
-  );
-};
+  )
+}
 
-export default Table; 
+// Exporta la tabla genérica
+export default Table
