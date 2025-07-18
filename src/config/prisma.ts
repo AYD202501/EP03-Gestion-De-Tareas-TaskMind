@@ -2,32 +2,35 @@
 import { PrismaClient } from '@prisma/client';
 
 declare global {
-  var prismaGlobal: PrismaClient;
+  var prismaGlobal: PrismaClient | undefined;
 }
+
+const createPrismaClient = () => {
+  return new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+};
+
 let prisma: PrismaClient;
+
 if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient({
-    // Esta opción es clave para Vercel:
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-    // Evita el uso de prepared statements (workaround seguro para serverless)
-    // Puedes quitar esto si usas Prisma Accelerate
-    log: ['error'],
-  });
+  prisma = createPrismaClient();
 } else {
+  // En desarrollo, usar singleton para hot reload
   if (!global.prismaGlobal) {
-    global.prismaGlobal = new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-    log: ['error'],
-  });
+    global.prismaGlobal = createPrismaClient();
   }
   prisma = global.prismaGlobal;
 }
+
+// Manejar limpieza en el cierre
+process.on('beforeExit', async () => {
+  await prisma.$disconnect();
+});
+
 export default prisma;
