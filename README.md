@@ -59,6 +59,12 @@ DATABASE_URL="TuUrl"
 JWT_SECRET="TuContraseña"
 ```
 
+Y nos conectamos con la base de datos
+
+```bash
+npx prisma generate
+```
+
 Ejecutamos
 
 ```bash
