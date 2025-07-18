@@ -40,13 +40,12 @@ export default async function handler(
       if (!fullName || !email || !role || !password) {
         return res.status(400).json({ error: 'Todos los campos son requeridos' })
       }
-      const hashed = await hash(password, 10)
       const u = await prisma.user.create({
         data: {
           name: fullName,
           email,
           role: role as Role,
-          password: hashed,
+          password,
           profile: { create: {} }
         },
         include: {
