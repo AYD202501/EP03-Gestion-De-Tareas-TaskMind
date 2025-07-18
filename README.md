@@ -39,3 +39,34 @@ Auth0 (Autenticación y gestión de usuarios)
 
 Vercel (Despliegue)
 
+---
+# Ejecutar el proyecto
+
+Primero instalamos yarn o npm
+
+```bash
+npm install
+
+#or
+
+yarn install
+```
+
+Despues creamos el archivo .env y lo configuramos
+
+```bash
+DATABASE_URL="TuUrl"
+JWT_SECRET="TuContraseña"
+```
+
+Ejecutamos
+
+```bash
+npm run dev
+
+#or
+
+yarn dev
+```
+
+Y abres [http://localhost:3000](http://localhost:3000) en tu navegador
