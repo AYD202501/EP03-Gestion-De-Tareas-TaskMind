@@ -1,8 +1,11 @@
 ## Integrantes del proyecto
 
-Simon Correa Rios - 1033179644
+Simon Correa Rios - 1033179644 
+
 Ana Maria Granada Rodas - 1000758426
-Juan Pablo Ramos Vélez - 1193518347 
+
+Juan Pablo Ramos Vélez - 1193518347
+
 Jesus Estiven Torres Quintero - 1000759253
 
 ## TaskMind – Sistema de Gestión de Tareas
