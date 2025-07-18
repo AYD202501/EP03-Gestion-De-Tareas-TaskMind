@@ -1,69 +1,77 @@
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from 'react'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import type { UserPayload } from '@/lib/auth'
 
-interface ProjectFormData {
-  name: string;
-  description: string;
-  manager: string;
+/** Forma de datos que maneja el formulario de Proyecto */
+export interface ProjectFormData {
+  name: string
+  description: string
+  assignedToId: string
 }
 
 interface ProjectFormProps {
-  data: ProjectFormData;
-  onChange: (data: ProjectFormData) => void;
-  //isEditing?: boolean;
+  data: ProjectFormData
+  onChange: (data: ProjectFormData) => void
+  /** Lista de usuarios para asignar */
+  users?: UserPayload[]
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({ data, onChange }) => { //, isEditing = false 
-  const handleChange = (field: keyof ProjectFormData, value: string) => {
-    onChange({
-      ...data,
-      [field]: value
-    });
-  };
+export default function ProjectForm({
+  data,
+  onChange,
+  users = [],
+}: ProjectFormProps) {
+  const handleChange = (field: keyof ProjectFormData, value: string) =>
+    onChange({ ...data, [field]: value })
 
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="name">Nombre del Proyecto</Label>
+        <Label htmlFor="name">Nombre del proyecto</Label>
         <Input
           id="name"
           value={data.name}
-          onChange={(e) => handleChange('name', e.target.value)}
-          placeholder="Ingresa el nombre del proyecto"
+          onChange={e => handleChange('name', e.target.value)}
+          placeholder="Título del proyecto"
         />
       </div>
-      
+
       <div>
         <Label htmlFor="description">Descripción</Label>
-        <Textarea
+        <Input
           id="description"
           value={data.description}
-          onChange={(e) => handleChange('description', e.target.value)}
-          placeholder="Ingresa la descripción del proyecto"
-          rows={3}
+          onChange={e => handleChange('description', e.target.value)}
+          placeholder="Descripción breve"
         />
       </div>
-      
+
       <div>
-        <Label htmlFor="manager">Gestor asignado</Label>
-        <Select value={data.manager} onValueChange={(value) => handleChange('manager', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona un gestor" />
+        <Label htmlFor="assignedToId">Responsable</Label>
+        <Select
+          value={data.assignedToId}
+          onValueChange={val => handleChange('assignedToId', val)}
+        >
+          <SelectTrigger id="assignedToId" className="cursor-pointer">
+            <SelectValue placeholder="Selecciona un usuario" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="María López">María López</SelectItem>
-            <SelectItem value="Pablo Ramos">Pablo Ramos</SelectItem>
-            <SelectItem value="Ana Granada">Ana Granada</SelectItem>
-            <SelectItem value="Simon Correa">Simon Correa</SelectItem>
-            <SelectItem value="Jesús Torres">Jesús Torres</SelectItem>
+            {users.map(u => (
+              <SelectItem key={u.id} value={u.id} className="cursor-pointer">
+                {u.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
     </div>
-  );
-};
-
-export default ProjectForm; 
+  )
+}

@@ -1,7 +1,15 @@
+// src/lib/auth.ts
+
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { getUserFromCookie } from '@/lib/getUserFromCookie'
-import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from 'next'
+import {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult
+} from 'next'
 import prisma from '@/config/prisma'
+
+export type RoleKey = 'Administrator' | 'Project_Manager' | 'Colaborator'
 
 export type UserPayload = {
   id: string
@@ -11,17 +19,16 @@ export type UserPayload = {
   avatarUrl: string | null
 }
 
-const SECRET_KEY = process.env.JWT_SECRET!
+export const SECRET_KEY: string = process.env.JWT_SECRET as string
 if (!SECRET_KEY) {
   throw new Error('JWT_SECRET no está definido')
 }
 
 export function signToken(
   user: UserPayload,
-  expiresIn: jwt.SignOptions['expiresIn'] = '7d'
+  expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
-  const options: SignOptions = { expiresIn }
-  return jwt.sign(user, SECRET_KEY, options)
+  return jwt.sign(user, SECRET_KEY, { expiresIn })
 }
 
 export function verifyToken(token: string): UserPayload {
@@ -37,18 +44,13 @@ export function verifyToken(token: string): UserPayload {
   }
   throw new Error('Token inválido')
 }
-
-export type RoleKey = 'Administrator' | 'Project_Manager' | 'Colaborator'
-
-export function withAuth<P extends Record<string, unknown> = Record<string, unknown>
->(
-  gssp?: GetServerSideProps,
+export function withAuth<P extends Record<string, unknown> = {}>(
+  gssp?: GetServerSideProps<P>,
   allowedRoles: RoleKey[] = []
-): GetServerSideProps {
+): GetServerSideProps<P & { user: UserPayload }> {
   return async (
     ctx: GetServerSidePropsContext
   ): Promise<GetServerSidePropsResult<P & { user: UserPayload }>> => {
-
     const tokenUser = getUserFromCookie(ctx.req)
     if (!tokenUser) {
       return { redirect: { destination: '/login', permanent: false } }
@@ -63,34 +65,30 @@ export function withAuth<P extends Record<string, unknown> = Record<string, unkn
     }
 
     const user: UserPayload = {
-      id: dbUser.id,
-      email: dbUser.email,
-      role: dbUser.role,
-      name: dbUser.name ?? null,
+      id:        dbUser.id,
+      email:     dbUser.email,
+      role:      dbUser.role,
+      name:      dbUser.name   ?? null,
       avatarUrl: dbUser.profile?.avatarUrl ?? null
     }
 
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-      return { redirect: { destination: '/', permanent: false } }
+      return { redirect: { destination: '/dashboard', permanent: false } }
     }
-
     if (gssp) {
       const result = await gssp(ctx)
       if ('props' in result) {
         return {
           props: {
             ...(result.props as P),
-            user,
-          },
+            user
+          }
         }
       }
-      return result as GetServerSidePropsResult<P & { user: UserPayload }>;
+      return result as GetServerSidePropsResult<P & { user: UserPayload }>
     }
-
     return {
-      props: {
-        user,
-      } as P & { user: UserPayload },
+      props: { user } as P & { user: UserPayload }
     }
   }
 }

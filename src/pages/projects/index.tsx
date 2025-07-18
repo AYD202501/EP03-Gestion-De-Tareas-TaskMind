@@ -1,237 +1,225 @@
-import React, { useState } from 'react';
-import Layout from '@/components/Organisms/Layout';
-import Table, { Column } from '@/components/Molecules/Table';
-import Modal from '@/components/Molecules/Modal';
-import ProjectForm from '@/components/Molecules/ProjectForm';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import { UserPayload, withAuth } from "@/lib/auth";
+// src/pages/projects/index.tsx
 
-export const getServerSideProps = withAuth()
+import React, { useState } from 'react'
+import prisma from '@/config/prisma'
+import { withAuth, UserPayload } from '@/lib/auth'
+import Layout from '@/components/Organisms/Layout'
+import Table, { Column } from '@/components/Molecules/Table'
+import Modal from '@/components/Molecules/Modal'
+import ProjectForm, { ProjectFormData } from '@/components/Molecules/ProjectForm'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
+import { useToast } from '@/components/ui/use-toast'
 
-interface ProjectItem {
-  id: number;
-  name: string;
-  description: string;
-  status: 'En Curso' | 'Pendiente' | 'Completado';
-  dueDate: string;
-  manager: {
-    name: string;
-    image: string;
-  };
+type ProjectItem = {
+  id:          string
+  name:        string
+  description: string | null
+  assignedToId: string
+  assignedToName:  string | null
+  createdAt:   string
+  updatedAt:   string
 }
 
-interface ProjectFormData {
-  name: string;
-  description: string;
-  manager: string;
-}
+export const getServerSideProps = withAuth(
+  async () => {
+    const projs = await prisma.project.findMany({
+      include: {
+        assignedTo: {
+          select: {
+            id: true,
+            name: true,
+            profile: { select: { avatarUrl: true } }
+          }
+        }
+      }
+    })
 
-const projectsData: ProjectItem[] = [
-  {
-    id: 1,
-    name: "Desarrollo de App Móvil",
-    manager: {
-      name: "Pablo Ramos",
-      image: "/avatar1.jpg"
-    },
-    status: "En Curso",
-    dueDate: "15 de agosto, 2023",
-    description: "Desarrollo de una aplicación móvil nativa para iOS y Android"
-  },
-  {
-    id: 2,
-    name: "Rediseño de la plataforma web",
-    manager: {
-      name: "Ana Granada",
-      image: "/avatar2.jpg"
-    },
-    status: "Pendiente",
-    dueDate: "30 de octubre, 2023",
-    description: "Renovación completa de la plataforma web corporativa con enfoque en UX/UI y rendimiento."
-  },
-  {
-    id: 3,
-    name: "Implementación CRM",
-    manager: {
-      name: "Simon Correa",
-      image: "/avatar3.jpg"
-    },
-    status: "En Curso",
-    dueDate: "31 de julio, 2023",
-    description: "Implementación de un sistema CRM para gestión de clientes"
-  },
-  {
-    id: 4,
-    name: "Optimización SEO",
-    manager: {
-      name: "Jesús Torres",
-      image: "/avatar4.jpg"
-    },
-    status: "Completado",
-    dueDate: "30 de mayo, 2023",
-    description: "Optimización del SEO para mejorar el posicionamiento web"
-  }
-];
+    // Listamos usuarios para el <Select> de responsables
+    const users = await prisma.user.findMany({
+      include: { profile: { select: { avatarUrl: true } } }
+    })
 
-const projectColumns: Column<ProjectItem>[] = [
-  {
-    key: 'name',
-    label: 'Proyecto',
-    type: 'text'
-  },
-  {
-    key: 'manager',
-    label: 'Gestor Asignado',
-    type: 'avatar'
-  },
-  {
-    key: 'status',
-    label: 'Estado',
-    type: 'badge',
-    badgeColors: {
-      'En Curso': 'bg-blue-100 text-blue-800',
-      'Pendiente': 'bg-yellow-100 text-yellow-800',
-      'Completado': 'bg-green-100 text-green-800'
+    return {
+      props: {
+        initialProjects: projs.map(p => ({
+          id:          p.id,
+          name:        p.name,
+          description: p.description,
+          assignedToName: p.assignedTo?.name ?? '',
+          createdAt:  (() => {
+            const d = p.createdAt
+            const dd = String(d.getDate()).padStart(2, '0')
+            const mm = String(d.getMonth() + 1).padStart(2, '0')
+            const yyyy = d.getFullYear()
+            return `${dd}/${mm}/${yyyy}`
+          })(),
+          updatedAt: p.updatedAt.toISOString(),
+        })),
+        users: users.map(u => ({
+          id:        u.id,
+          name:      u.name,
+          email:     u.email,
+          role:      u.role,
+          avatarUrl: u.profile?.avatarUrl ?? null
+        })),
+      }
     }
   },
-  {
-    key: 'dueDate',
-    label: 'Fecha Límite',
-    type: 'text'
-  },
-  {
-    key: 'actions',
-    label: 'Acciones',
-    type: 'actions'
-  }
-];
-interface ProjectsPageProps {
-  user: UserPayload;
-}
+  ['Administrator', 'Project_Manager']
+)
 
-export default function ProjectsPage({ user }: ProjectsPageProps) {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
-  const [projectFormData, setProjectFormData] = useState<ProjectFormData>({
+export default function ProjectsPage({
+  user,
+  initialProjects,
+  users
+}: {
+  user: UserPayload
+  initialProjects: ProjectItem[]
+  users: UserPayload[]
+}) {
+  const [projects, setProjects] = useState<ProjectItem[]>(initialProjects)
+  const [modal, setModal]       = useState<'create'|'edit'|'delete'|null>(null)
+  const [selected, setSelected] = useState<ProjectItem|null>(null)
+  const [form, setForm]         = useState<ProjectFormData>({
     name: '',
     description: '',
-    manager: ''
-  });
+    assignedToId: ''
+  })
+  const { toast } = useToast()
 
-  const handleEdit = (project: ProjectItem) => {
-    setSelectedProject(project);
-    setProjectFormData({
-      name: project.name,
-      description: project.description || 'Descripción del proyecto',
-      manager: project.manager.name
-    });
-    setIsEditModalOpen(true);
-  };
+  const resetForm = (p?: ProjectItem) => {
+    if (p) {
+      setForm({
+        name:         p.name,
+        description:  p.description ?? '',
+        assignedToId: p.assignedToId
+      })
+      setSelected(p)
+    } else {
+      setForm({ name: '', description: '', assignedToId: '' })
+      setSelected(null)
+    }
+  }
 
-  const handleDelete = (project: ProjectItem) => {
-    setSelectedProject(project);
-    setIsDeleteModalOpen(true);
-  };
+  // CREATE
+  const onCreate = async () => {
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
+    }
+    const p = (await res.json()) as ProjectItem
+    setProjects(prev => [...prev, p])
+    setModal(null)
+    toast({ title: 'Proyecto creado' })
+  }
 
-  const handleNewProject = () => {
-    setProjectFormData({
-      name: '',
-      description: '',
-      manager: ''
-    });
-    setIsCreateModalOpen(true);
-  };
+  // UPDATE
+  const onUpdate = async () => {
+    if (!selected) return
+    const res = await fetch(`/api/projects/${selected.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
+    }
+    setProjects(prev =>
+      prev.map(x => x.id === selected.id
+        ? { ...x, ...form, assignedToName: x.assignedToName }
+        : x
+      )
+    )
+    setModal(null)
+    toast({ title: 'Proyecto actualizado' })
+  }
 
-  const handleCreateProject = () => {
-    console.log('Crear proyecto:', projectFormData);
-    setIsCreateModalOpen(false);
-  };
+  // DELETE
+  const onDelete = async () => {
+    if (!selected) return
+    const res = await fetch(`/api/projects/${selected.id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
+    }
+    setProjects(prev => prev.filter(x => x.id !== selected.id))
+    setModal(null)
+    toast({ title: 'Proyecto eliminado' })
+  }
 
-  const handleUpdateProject = () => {
-    console.log('Actualizar proyecto:', projectFormData);
-    setIsEditModalOpen(false);
-  };
-
-  const handleConfirmDelete = () => {
-    console.log('Eliminar proyecto:', selectedProject);
-    setIsDeleteModalOpen(false);
-  };
+  const columns: Column<ProjectItem>[] = [
+    { key: 'name',       label: 'Proyecto',    type: 'text'   },
+    { key: 'assignedToName', label: 'Responsable', type: 'text' },
+    { key: 'description',label: 'Descripción', type: 'text'   },
+    { key: 'createdAt',  label: 'Creado',      type: 'text'   },
+    { key: 'actions',    label: 'Acciones',    type: 'actions'}
+  ]
 
   return (
-    <Layout user={user} 
-      childrenTitle="Proyectos" 
-      childrenSubitle="Administra los proyectos y asigna gestores"
-    >
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Gestión de Proyectos</h2>
-          </div>
-          <Button 
-            onClick={handleNewProject}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo proyecto
-          </Button>
-        </div>
-        
+    <Layout user={user} childrenTitle="Proyectos" childrenSubitle="Administra los proyectos">
+      {/* Header */}
+      <section className="absolute mb-8 pt-2 w-full max-w-md mx-auto">
+        <Button
+          onClick={() => { resetForm(); setModal('create') }}
+          className="absolute mt-2 bg-blue-500 hover:bg-blue-600 text-white shadow-md cursor-pointer"
+        >
+          <Plus className="mr-2" /> Nuevo proyecto
+        </Button>
+      </section>
+      <section className="mb-6 mt-15 w-full">
         <Table<ProjectItem>
-          columns={projectColumns}
-          data={projectsData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          columns={columns}
+          data={projects}
+          onEdit={p => { resetForm(p); setModal('edit') }}
+          onDelete={p => { resetForm(p); setModal('delete') }}
         />
-      </div>
+      </section>
 
+      {/* Create Modal */}
       <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={modal === 'create'}
+        onClose={() => setModal(null)}
         title="Crear Proyecto"
-        subtitle="Crear un nuevo proyecto"
+        subtitle="Rellena el formulario"
         primaryButtonText="Crear"
-        onPrimaryAction={handleCreateProject}
+        onPrimaryAction={onCreate}
       >
-        <ProjectForm
-          data={projectFormData}
-          onChange={setProjectFormData}
-        />
+        <ProjectForm data={form} onChange={setForm} users={users} />
       </Modal>
 
+      {/* Edit Modal */}
       <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        isOpen={modal === 'edit'}
+        onClose={() => setModal(null)}
         title="Editar Proyecto"
-        subtitle="Actualiza la información del proyecto existente."
+        subtitle="Actualiza los datos"
         primaryButtonText="Actualizar"
-        onPrimaryAction={handleUpdateProject}
+        onPrimaryAction={onUpdate}
       >
-        <ProjectForm
-          data={projectFormData}
-          onChange={setProjectFormData}
-          //isEditing={true}
-        />
+        <ProjectForm data={form} onChange={setForm} users={users} />
       </Modal>
 
+      {/* Delete Modal */}
       <Modal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title={`¿Está seguro de eliminar el proyecto "${selectedProject?.name}"?`}
-        subtitle="Esta acción no se puede deshacer. Se eliminará permanentemente este proyecto y todos sus datos asociados."
-        primaryButtonText="Continuar"
-        secondaryButtonText="Cancel"
-        onPrimaryAction={handleConfirmDelete}
+        isOpen={modal === 'delete'}
+        onClose={() => setModal(null)}
+        title={`Eliminar proyecto "${selected?.name}"?`}
+        subtitle="Esta acción no se puede deshacer."
+        primaryButtonText="Eliminar"
         primaryButtonVariant="destructive"
+        onPrimaryAction={onDelete}
       >
-        <div className="py-4">
-          <p className="text-sm text-gray-600">
-            Esta acción eliminará permanentemente el proyecto y todos sus datos asociados.
-          </p>
-        </div>
+        <p className="text-sm text-gray-600">
+          El proyecto será eliminado permanentemente.
+        </p>
       </Modal>
     </Layout>
-  );
-} 
+  )
+}

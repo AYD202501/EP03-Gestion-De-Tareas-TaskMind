@@ -35,7 +35,7 @@ function Table<T>({
               variant="ghost"
               size="sm"
               onClick={() => onEdit(item)}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 cursor-pointer hover:bg-gray-100"
             >
               <Edit className="h-4 w-4" />
             </Button>
@@ -45,7 +45,7 @@ function Table<T>({
               variant="ghost"
               size="sm"
               onClick={() => onDelete(item)}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+              className="h-8 w-8 p-0 text-red-600 cursor-pointer hover:text-red-700"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
