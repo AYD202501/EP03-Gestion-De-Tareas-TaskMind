@@ -2,35 +2,34 @@
 import { PrismaClient } from '@prisma/client';
 
 declare global {
-  var prismaGlobal: PrismaClient | undefined;
+  var prismaGlobal: PrismaClient;
 }
 
-const createPrismaClient = () => {
-  return new PrismaClient({
+let prisma: PrismaClient;
+
+if (process.env.NODE_ENV === 'production') {
+  // En producción, crear nueva instancia cada vez para evitar problemas serverless
+  prisma = new PrismaClient({
     datasources: {
       db: {
         url: process.env.DATABASE_URL,
       },
     },
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: ['error'],
   });
-};
-
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = createPrismaClient();
 } else {
-  // En desarrollo, usar singleton para hot reload
+  // En desarrollo, usar singleton para evitar múltiples conexiones
   if (!global.prismaGlobal) {
-    global.prismaGlobal = createPrismaClient();
+    global.prismaGlobal = new PrismaClient({
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+      log: ['query', 'error', 'warn'],
+    });
   }
   prisma = global.prismaGlobal;
 }
-
-// Manejar limpieza en el cierre
-process.on('beforeExit', async () => {
-  await prisma.$disconnect();
-});
 
 export default prisma;
