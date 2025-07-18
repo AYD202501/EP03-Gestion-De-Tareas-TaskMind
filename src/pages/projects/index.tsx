@@ -18,7 +18,6 @@ type ProjectItem = {
   assignedToId: string
   assignedToName:  string | null
   createdAt:   string
-  updatedAt:   string
 }
 
 export const getServerSideProps = withAuth(
@@ -54,7 +53,6 @@ export const getServerSideProps = withAuth(
             const yyyy = d.getFullYear()
             return `${dd}/${mm}/${yyyy}`
           })(),
-          updatedAt: p.updatedAt.toISOString(),
         })),
         users: users.map(u => ({
           id:        u.id,
