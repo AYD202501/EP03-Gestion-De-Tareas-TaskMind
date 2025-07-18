@@ -51,14 +51,14 @@ const Modal: React.FC<ModalProps> = ({
           <Button
             variant="outline"
             onClick={handleSecondaryAction}
+            className="text-gray-700 cursor-pointer"
           >
             {secondaryButtonText}
           </Button>
           <Button
             variant={primaryButtonVariant}
             onClick={onPrimaryAction}
-            className={primaryButtonVariant === 'default' ? 'bg-blue-600 hover:bg-blue-700' : ''}
-          >
+            className={`text-white cursor-pointer ${primaryButtonVariant === 'default' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}>
             {primaryButtonText}
           </Button>
         </div>

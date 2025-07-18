@@ -11,7 +11,7 @@ interface Props {
   childrenSubitle: string
 }
 
-const Index = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
+const Layout = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
   return (
     <div className="flex min-h-screen bg-background">
       <SidebarProvider>
@@ -19,13 +19,13 @@ const Index = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
         <div className='flex flex-1 flex-col'>
           <Header user={user} />
           <main className="flex overflow-auto h-full">
-            <div className="flex flex-col items-center h-full w-full justify-start">
+            <div className="flex flex-col items-start h-full w-full justify-start">
               <div className="w-full px-4 pt-6 pb-1 h-auto">
                 <h1 className="text-xl md:text-2xl font-bold">{childrenTitle}</h1>
                 <h1 className="text-md md:text-xl font-medium">{childrenSubitle}</h1>
               </div>
               <div className="bg-gray-200 h-0.5 w-full rounded-lg"></div>
-              <div className="flex w-full h-full justify-center items-center p-4">
+              <div className="flex w-full h-full justify-start items-start px-4">
                   {children}
               </div>
             </div>
@@ -37,4 +37,4 @@ const Index = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
   );
 };
 
-export default Index;
+export default Layout;

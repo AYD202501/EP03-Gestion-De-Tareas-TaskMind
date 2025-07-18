@@ -1,30 +1,37 @@
 // src/pages/users/index.tsx
 
 import React, { useState } from 'react'
-import Layout from '@/components/Organisms/Layout'
+import { GetServerSideProps } from 'next'
+import prisma from '@/config/prisma'
+import { withAuth, UserPayload } from '@/lib/auth'
+import Layout from '@/components/Organisms/Layout'   // ← default import
 import Table, { Column } from '@/components/Molecules/Table'
 import Modal from '@/components/Molecules/Modal'
-import UserForm from '@/components/Molecules/UserForm'
+import UserForm, { UserFormData } from '@/components/Molecules/UserForm'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
-import { withAuth, UserPayload } from '@/lib/auth'
-import type { GetServerSideProps } from 'next'
+import { useToast } from '@/components/ui/use-toast'
+import { RoleKey } from '@/lib/auth'
+
+type UserTableItem = {
+  id: string
+  user: { name: string; image: string }
+  email: string
+  role: RoleKey
+}
 
 type Props = {
   user: UserPayload
+  initialUsers: UserTableItem[]
 }
 
-// Primero autenticamos, luego chequeamos el rol
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
-  const authResult = await withAuth()(ctx)
-  if ('redirect' in authResult) {
-    return authResult
-  }
+  //Autenticación + rol
+  const auth = await withAuth()(ctx)
+  if ('redirect' in auth) return auth
+  if ('notFound' in auth) return auth
 
-  if (!('props' in authResult)) {
-    return authResult
-  }
-  const { user } = authResult.props as { user: UserPayload }
+  const { user } = auth.props as { user: UserPayload }
   if (user.role !== 'Administrator') {
     return {
       redirect: {
@@ -34,46 +41,104 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     }
   }
 
-  return { props: { user } }
+  // 2) Cargamos usuarios reales desde la BD
+  const users = await prisma.user.findMany({
+    include: { profile: { select: { avatarUrl: true } } }
+  })
+  const initialUsers: UserTableItem[] = users.map(u => ({
+    id: u.id,
+    user: { name: u.name, image: u.profile?.avatarUrl ?? '' },
+    email: u.email,
+    role: u.role,
+  }))
+
+  return { props: { user, initialUsers } }
 }
 
-export default function UsersPage({ user }: Props) {
+export default function UsersPage({ user, initialUsers }: Props) {
+  const [usersData, setUsersData] = useState<UserTableItem[]>(initialUsers)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen]     = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedUser, setSelectedUser]           = useState<UserTableItem | null>(null)
-  const [userFormData, setUserFormData]           = useState({
-    fullName: '',
-    email: '',
-    role: ''
-  })
+  const [formData, setFormData] = useState<UserFormData>({ fullName: '', email: '', role: '', password: '' })
+  const { toast } = useToast()
 
-  const usersData = [
-    {
-      id: 1,
-      user: { name: 'Pablo Ramos',  image: '/avatar1.jpg' },
-      email: 'juanp.ramos@udea.edu.co',
-      role: 'Administrador'
-    },
-    {
-      id: 2,
-      user: { name: 'Ana Granada', image: '/avatar2.jpg' },
-      email: 'ana.granadal@udea.edu.co',
-      role: 'Colaborador'
-    },
-    {
-      id: 3,
-      user: { name: 'Simon Correa', image: '/avatar3.jpg' },
-      email: 'l.messi@udea.edu.co',
-      role: 'Colaborador'
-    },
-    {
-      id: 4,
-      user: { name: 'Jesús Torres', image: '/avatar4.jpg' },
-      email: 'jesus.torresq@udea.edu.co',
-      role: 'Gestor'
+  // CREATE
+  const handleCreate = async () => {
+    const res = await fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
     }
-  ]
+    const newUser = (await res.json()) as UserTableItem
+    setUsersData(prev => [...prev, newUser])
+    setIsCreateModalOpen(false)
+    toast({ title: 'Usuario creado' })
+  }
+
+  // UPDATE
+  const handleUpdate = async () => {
+    if (!selectedUser) return
+    const res = await fetch(`/api/users/${selectedUser.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
+    }
+    setUsersData(prev =>
+      prev.map(u =>
+        u.id === selectedUser!.id
+          ? {
+              ...u,
+              user: { ...u.user, name: formData.fullName },
+              email: formData.email,
+              role: formData.role as RoleKey // Aseguramos que sea del tipo correcto
+            }
+          : u
+      )
+    )
+    setIsEditModalOpen(false)
+    toast({ title: 'Usuario actualizado' })
+  }
+
+  // DELETE
+  const handleDelete = async () => {
+    if (!selectedUser) return
+    const res = await fetch(`/api/users/${selectedUser.id}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      return toast({ title: 'Error', description: err.error })
+    }
+    setUsersData(prev => prev.filter(u => u.id !== selectedUser.id))
+    setIsDeleteModalOpen(false)
+    toast({ title: 'Usuario eliminado' })
+  }
+
+ const onNew = () => {
+    setFormData({ fullName: '', email: '', role: '', password: '' })
+    setIsCreateModalOpen(true)
+  }
+
+  const onEdit = (u: UserTableItem) => {
+    setSelectedUser(u)
+    setFormData({ fullName: u.user.name, email: u.email, role: u.role, password: '' })
+    setIsEditModalOpen(true)
+  }
+
+  const onDelete = (u: UserTableItem) => {
+    setSelectedUser(u)
+    setIsDeleteModalOpen(true)
+  }
 
   const userColumns: Column<UserTableItem>[] = [
     { key: 'user',    label: 'Usuario', type: 'avatar' },
@@ -83,129 +148,73 @@ export default function UsersPage({ user }: Props) {
       label: 'Rol',
       type: 'badge',
       badgeColors: {
-        Administrador: 'bg-purple-100 text-purple-800',
-        Gestor:        'bg-blue-100   text-blue-800',
-        Colaborador:   'bg-gray-100   text-gray-800',
+        Administrator:   'bg-purple-100 text-purple-800',
+        Project_Manager: 'bg-blue-100   text-blue-800',
+        Colaborator:     'bg-gray-100   text-gray-800',
       }
     },
     { key: 'actions', label: 'Acciones', type: 'actions' }
   ]
 
-  interface UserTableItem {
-    id: number;
-    user: {
-      name: string;
-      image: string;
-    };
-    email: string;
-    role: string;
-  }
-  const handleEdit = (u: UserTableItem ) => {
-    setSelectedUser(u)
-    setUserFormData({
-      fullName: u.user.name,
-      email: u.email,
-      role: u.role
-    })
-    setIsEditModalOpen(true)
-  }
-
-  const handleDelete = (u: UserTableItem) => {
-    setSelectedUser(u)
-    setIsDeleteModalOpen(true)
-  }
-
-  const handleNewUser = () => {
-    setUserFormData({ fullName: '', email: '', role: '' })
-    setIsCreateModalOpen(true)
-  }
-
-  const handleCreateUser = () => {
-    console.log('Crear usuario:', userFormData)
-    setIsCreateModalOpen(false)
-  }
-
-  const handleUpdateUser = () => {
-    console.log('Actualizar usuario:', userFormData)
-    setIsEditModalOpen(false)
-  }
-
-  const handleConfirmDelete = () => {
-    console.log('Eliminar usuario:', selectedUser)
-    setIsDeleteModalOpen(false)
-  }
-
   return (
-    <Layout
-      user={user}
-      childrenTitle="Usuarios"
-      childrenSubitle="Administra los usuarios y sus roles en el sistema"
-    >
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Gestión de Usuarios
-          </h2>
-          <Button
-            onClick={handleNewUser}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" /> Nuevo usuario
-          </Button>
-        </div>
-
-        <Table
-          columns={userColumns}
-          data={usersData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
-      </div>
-
-      {/* Create Modal */}
+    <Layout user={user} childrenTitle="Usuarios" childrenSubitle="Administra los usuarios">
+      <section className="mb-6 mt-15 w-full">
+        <Table columns={userColumns} data={usersData} onEdit={onEdit} onDelete={onDelete} />
+      </section>
+      <section className="absolute mb-8 pt-2 w-full max-w-md mx-auto">
+        <Button
+          onClick={onNew}
+          className="absolute mt-2 bg-blue-500 hover:bg-blue-600 text-white shadow-md cursor-pointer"
+        >
+          <Plus className="mr-2" /> Nuevo usuario
+        </Button>
+      </section>
+      
+     {/* Modales */}
       <Modal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         title="Crear usuario"
-        subtitle="Crea un nuevo usuario"
+        subtitle="Rellena el formulario"
         primaryButtonText="Crear"
-        onPrimaryAction={handleCreateUser}
+        onPrimaryAction={handleCreate}
       >
-        <UserForm data={userFormData} onChange={setUserFormData} />
+        {/* En creación incluimos password */}
+        <UserForm
+          data={formData}
+          onChange={(data) => setFormData(data)}
+          includePassword
+        />
       </Modal>
 
-      {/* Edit Modal */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title="Editar usuario"
-        subtitle="Actualiza la información del usuario existente."
+        subtitle="Actualiza los datos"
         primaryButtonText="Actualizar"
-        onPrimaryAction={handleUpdateUser}
+        onPrimaryAction={handleUpdate}
       >
+        {/* Al editar no pedimos password */}
         <UserForm
-          data={userFormData}
-          onChange={setUserFormData}
-          //isEditing
+          data={formData}
+          onChange={(data) => setFormData(data)}
+          includePassword={false}
         />
       </Modal>
 
-      {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title={`¿Está seguro de eliminar al usuario "${selectedUser?.user?.name}"?`}
-        subtitle="Esta acción no se puede deshacer. Se eliminará permanentemente este usuario y todos sus datos asociados."
-        primaryButtonText="Continuar"
-        secondaryButtonText="Cancelar"
+        title={`Eliminar ${selectedUser?.user.name}?`}
+        subtitle="Esta acción es irreversible"
+        primaryButtonText="Eliminar"
         primaryButtonVariant="destructive"
-        onPrimaryAction={handleConfirmDelete}
+        onPrimaryAction={handleDelete}
       >
-        <div className="py-4">
-          <p className="text-sm text-gray-600">
-            Esta acción eliminará permanentemente al usuario y todos sus datos asociados.
-          </p>
-        </div>
+        <p className="text-sm text-gray-600">
+          Se eliminará permanentemente este usuario.
+        </p>
       </Modal>
     </Layout>
   )
