@@ -37,7 +37,7 @@ const items: Record<string, {title: string, subtitle: string}> = {
 }
 
 interface Props {
-  user: any
+  user: UserPayload;
 }
 
 

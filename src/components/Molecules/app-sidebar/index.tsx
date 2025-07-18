@@ -1,5 +1,6 @@
 // src/components/Molecules/app-sidebar/index.tsx
-
+import Image from 'next/image'
+import type { ComponentType, SVGProps } from 'react'
 import { Calendar, Home, Inbox, Search } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -19,7 +20,7 @@ import type { UserPayload, RoleKey } from '@/lib/auth'
 /** Mapa de roles a items de menú */
 const menuMap: Record<
   RoleKey,
-  { title: string; url: string; icon: React.ComponentType<any> }[]
+  { title: string; url: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[]
 > = {
   Administrator: [
     { title: 'Inicio',    url: '/dashboard', icon: Home     },
@@ -58,9 +59,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <SidebarGroup className="flex items-center justify-center">
           <SidebarGroupLabel>
             <div className="mt-20">
-              <img
+              <Image
                 src="/logo.png"
                 alt="TaskMind Logo"
+                width={120}
+                height={120}
                 className="mx-auto h-30"
               />
             </div>

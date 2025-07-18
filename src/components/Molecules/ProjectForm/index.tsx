@@ -13,10 +13,10 @@ interface ProjectFormData {
 interface ProjectFormProps {
   data: ProjectFormData;
   onChange: (data: ProjectFormData) => void;
-  isEditing?: boolean;
+  //isEditing?: boolean;
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({ data, onChange, isEditing = false }) => {
+const ProjectForm: React.FC<ProjectFormProps> = ({ data, onChange }) => { //, isEditing = false 
   const handleChange = (field: keyof ProjectFormData, value: string) => {
     onChange({
       ...data,

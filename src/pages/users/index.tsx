@@ -41,7 +41,7 @@ export default function UsersPage({ user }: Props) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen]     = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedUser, setSelectedUser]           = useState<any>(null)
+  const [selectedUser, setSelectedUser]           = useState<UserTableItem | null>(null)
   const [userFormData, setUserFormData]           = useState({
     fullName: '',
     email: '',
@@ -75,7 +75,7 @@ export default function UsersPage({ user }: Props) {
     }
   ]
 
-  const userColumns: Column[] = [
+  const userColumns: Column<UserTableItem>[] = [
     { key: 'user',    label: 'Usuario', type: 'avatar' },
     { key: 'email',   label: 'Email',   type: 'text'   },
     {
@@ -91,7 +91,16 @@ export default function UsersPage({ user }: Props) {
     { key: 'actions', label: 'Acciones', type: 'actions' }
   ]
 
-  const handleEdit = (u: any) => {
+  interface UserTableItem {
+    id: number;
+    user: {
+      name: string;
+      image: string;
+    };
+    email: string;
+    role: string;
+  }
+  const handleEdit = (u: UserTableItem ) => {
     setSelectedUser(u)
     setUserFormData({
       fullName: u.user.name,
@@ -101,7 +110,7 @@ export default function UsersPage({ user }: Props) {
     setIsEditModalOpen(true)
   }
 
-  const handleDelete = (u: any) => {
+  const handleDelete = (u: UserTableItem) => {
     setSelectedUser(u)
     setIsDeleteModalOpen(true)
   }
@@ -177,7 +186,7 @@ export default function UsersPage({ user }: Props) {
         <UserForm
           data={userFormData}
           onChange={setUserFormData}
-          isEditing
+          //isEditing
         />
       </Modal>
 

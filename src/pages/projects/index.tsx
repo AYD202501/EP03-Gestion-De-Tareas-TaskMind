@@ -5,12 +5,29 @@ import Modal from '@/components/Molecules/Modal';
 import ProjectForm from '@/components/Molecules/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { withAuth } from "@/lib/auth";
+import { UserPayload, withAuth } from "@/lib/auth";
 
 export const getServerSideProps = withAuth()
 
+interface ProjectItem {
+  id: number;
+  name: string;
+  description: string;
+  status: 'En Curso' | 'Pendiente' | 'Completado';
+  dueDate: string;
+  manager: {
+    name: string;
+    image: string;
+  };
+}
 
-const projectsData = [
+interface ProjectFormData {
+  name: string;
+  description: string;
+  manager: string;
+}
+
+const projectsData: ProjectItem[] = [
   {
     id: 1,
     name: "Desarrollo de App Móvil",
@@ -57,7 +74,7 @@ const projectsData = [
   }
 ];
 
-const projectColumns: Column[] = [
+const projectColumns: Column<ProjectItem>[] = [
   {
     key: 'name',
     label: 'Proyecto',
@@ -90,21 +107,21 @@ const projectColumns: Column[] = [
   }
 ];
 interface ProjectsPageProps {
-  user: any;
+  user: UserPayload;
 }
 
 export default function ProjectsPage({ user }: ProjectsPageProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<any>(null);
-  const [projectFormData, setProjectFormData] = useState({
+  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
+  const [projectFormData, setProjectFormData] = useState<ProjectFormData>({
     name: '',
     description: '',
     manager: ''
   });
 
-  const handleEdit = (project: any) => {
+  const handleEdit = (project: ProjectItem) => {
     setSelectedProject(project);
     setProjectFormData({
       name: project.name,
@@ -114,7 +131,7 @@ export default function ProjectsPage({ user }: ProjectsPageProps) {
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (project: any) => {
+  const handleDelete = (project: ProjectItem) => {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
   };
@@ -162,7 +179,7 @@ export default function ProjectsPage({ user }: ProjectsPageProps) {
           </Button>
         </div>
         
-        <Table
+        <Table<ProjectItem>
           columns={projectColumns}
           data={projectsData}
           onEdit={handleEdit}
@@ -195,7 +212,7 @@ export default function ProjectsPage({ user }: ProjectsPageProps) {
         <ProjectForm
           data={projectFormData}
           onChange={setProjectFormData}
-          isEditing={true}
+          //isEditing={true}
         />
       </Modal>
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
+import Image from 'next/image'
 
 export const Index = ({ usuario }: { usuario: any }) => {
   return (
@@ -9,7 +10,7 @@ export const Index = ({ usuario }: { usuario: any }) => {
       <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
         <div className='inline-flex items-center gap-x-3'>
           <div className='flex items-center gap-x-2'>
-            <img className='object-cover w-10 h-10 rounded-full' src={usuario.image} />
+            <Image className='object-cover w-10 h-10 rounded-full' src={usuario.image} alt='user image'/>
             <div>
               <h2 className='font-medium text-gray-800 dark:text-white '>{usuario.name}</h2>
               <p className='text-sm font-normal text-gray-600 dark:text-gray-400'>

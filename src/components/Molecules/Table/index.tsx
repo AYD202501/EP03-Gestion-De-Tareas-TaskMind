@@ -4,8 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2 } from 'lucide-react';
 
-export interface Column {
-  key: string;
+export interface Column<T> {
+  key: keyof T | 'actions';
   label: string;
   type: 'text' | 'avatar' | 'badge' | 'actions';
   badgeColors?: {
@@ -13,38 +13,72 @@ export interface Column {
   };
 }
 
-export interface TableProps {
-  columns: Column[];
-  data: any[];
-  onEdit?: (item: any) => void;
-  onDelete?: (item: any) => void;
+export interface TableProps<T> {
+  columns: Column<T>[];
+  data: T[];
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
 }
 
-const Table: React.FC<TableProps> = ({ columns, data, onEdit, onDelete }) => {
-  const renderCell = (item: any, column: Column) => {
+function Table<T>({
+  columns,
+  data,
+  onEdit,
+  onDelete,
+}: TableProps<T>) {
+  const renderCell = (item: T, column: Column<T>) => {
+    if (column.key === 'actions') {
+      return (
+        <div className="flex items-center gap-2">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(item)}
+              className="h-8 w-8 p-0"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(item)}
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      );
+    }
+    const value = item[column.key];
     switch (column.type) {
       case 'avatar':
+        const user = value as { name?: string; image?: string };
+
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={item[column.key]?.image} />
+              <AvatarImage src={user.image} />
               <AvatarFallback className="bg-gray-200">
-                {item[column.key]?.name?.split(' ').map((n: string) => n[0]).join('')}
+                {user.name?.split(' ').map((n) => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
-            <span className="font-medium">{item[column.key]?.name}</span>
+            <span className="font-medium">{user.name}</span>
           </div>
         );
-      
+
       case 'badge':
-        const value = item[column.key];
-        const color = column.badgeColors?.[value] || 'bg-gray-100 text-gray-800';
+        const val = value as string;
+        const color = column.badgeColors?.[val] || 'bg-gray-100 text-gray-800';
         return (
           <Badge className={color}>
-            {value}
+            {val}
           </Badge>
         );
-      
+
       case 'actions':
         return (
           <div className="flex items-center gap-2">
@@ -70,9 +104,9 @@ const Table: React.FC<TableProps> = ({ columns, data, onEdit, onDelete }) => {
             )}
           </div>
         );
-      
+
       default:
-        return <span>{item[column.key]}</span>;
+        return <span>{String(value)}</span>;
     }
   };
 
@@ -83,7 +117,7 @@ const Table: React.FC<TableProps> = ({ columns, data, onEdit, onDelete }) => {
           <tr>
             {columns.map((column) => (
               <th
-                key={column.key}
+                key={String(column.key)}
                 className="px-6 py-3 text-left text-sm font-medium text-gray-900"
               >
                 {column.label}
@@ -96,7 +130,7 @@ const Table: React.FC<TableProps> = ({ columns, data, onEdit, onDelete }) => {
             <tr key={index} className="hover:bg-gray-50">
               {columns.map((column) => (
                 <td
-                  key={column.key}
+                  key={String(column.key)}
                   className="px-6 py-4 text-sm text-gray-900"
                 >
                   {renderCell(item, column)}

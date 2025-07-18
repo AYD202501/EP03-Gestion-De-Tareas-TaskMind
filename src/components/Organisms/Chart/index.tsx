@@ -1,5 +1,7 @@
 'use client'
 
+import type { ChartConfig } from '@/components/ui/chart'
+
 import {
   BarChart,
   Bar,
@@ -24,7 +26,7 @@ interface Props {
     inProgress: number
     pending: number
   }[]
-  chartConfig?: any
+  chartConfig: ChartConfig
 }
 
 const Index = ({ chartData, chartConfig }: Props) => {

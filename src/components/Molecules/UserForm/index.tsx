@@ -12,10 +12,10 @@ interface UserFormData {
 interface UserFormProps {
   data: UserFormData;
   onChange: (data: UserFormData) => void;
-  isEditing?: boolean;
+//  isEditing?: boolean;
 }
 
-const UserForm: React.FC<UserFormProps> = ({ data, onChange, isEditing = false }) => {
+const UserForm: React.FC<UserFormProps> = ({ data, onChange }) => { //, isEditing = false
   const handleChange = (field: keyof UserFormData, value: string) => {
     onChange({
       ...data,

@@ -6,6 +6,7 @@ import TaskForm from '@/components/Molecules/TaskForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { withAuth } from "@/lib/auth";
+import { UserPayload } from '@/lib/auth';
 
 export const getServerSideProps = withAuth()
 
@@ -85,7 +86,7 @@ const initialTasks = [
 ];
 
 interface TasksPageProps {
-  user: any;
+  user: UserPayload;
 }
 
 export default function TasksPage({ user }: TasksPageProps) {

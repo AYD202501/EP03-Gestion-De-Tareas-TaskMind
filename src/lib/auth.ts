@@ -40,13 +40,15 @@ export function verifyToken(token: string): UserPayload {
 
 export type RoleKey = 'Administrator' | 'Project_Manager' | 'Colaborator'
 
-export function withAuth(
+export function withAuth<P extends Record<string, unknown> = Record<string, unknown>
+>(
   gssp?: GetServerSideProps,
   allowedRoles: RoleKey[] = []
 ): GetServerSideProps {
   return async (
     ctx: GetServerSidePropsContext
-  ): Promise<GetServerSidePropsResult<Record<string, any>>> => {
+  ): Promise<GetServerSidePropsResult<P & { user: UserPayload }>> => {
+
     const tokenUser = getUserFromCookie(ctx.req)
     if (!tokenUser) {
       return { redirect: { destination: '/login', permanent: false } }
@@ -69,7 +71,7 @@ export function withAuth(
     }
 
     if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-      return { redirect: { destination: '/unauthorized', permanent: false } }
+      return { redirect: { destination: '/', permanent: false } }
     }
 
     if (gssp) {
@@ -77,16 +79,18 @@ export function withAuth(
       if ('props' in result) {
         return {
           props: {
-            ...result.props,
+            ...(result.props as P),
             user,
-          }
+          },
         }
       }
-      return result
+      return result as GetServerSidePropsResult<P & { user: UserPayload }>;
     }
 
     return {
-      props: { user }
+      props: {
+        user,
+      } as P & { user: UserPayload },
     }
   }
 }
