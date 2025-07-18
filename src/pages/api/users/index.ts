@@ -1,5 +1,9 @@
 // src/pages/api/users/index.ts
 
+// API para manejar usuarios:
+// - GET: devuelve la lista de usuarios
+// - POST: crea un nuevo usuario con hash de contraseña
+
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
 import { hash } from 'bcryptjs'
@@ -12,6 +16,9 @@ export default async function handler(
   res: NextApiResponse<any | ErrorResponse>
 ) {
   switch (req.method) {
+
+    // GET /api/users
+    // Devuelve todos los usuarios con su perfil (avatar)
     case 'GET': {
       const users = await prisma.user.findMany({
         include: {
@@ -25,11 +32,13 @@ export default async function handler(
           image: u.profile?.avatarUrl ?? ''
         },
         email: u.email,
-        role: u.role as Role   // ya es un enum Role
+        role: u.role as Role  // El rol ya es del tipo enum Role
       }))
       return res.status(200).json(data)
     }
 
+    // POST /api/users
+    // Crea un nuevo usuario con su perfil asociado
     case 'POST': {
       const { fullName, email, role, password } = req.body as {
         fullName?: string
@@ -37,10 +46,16 @@ export default async function handler(
         role?: string
         password?: string
       }
+
+      // Validación básica de campos
       if (!fullName || !email || !role || !password) {
         return res.status(400).json({ error: 'Todos los campos son requeridos' })
       }
+
+      // Hashea la contraseña antes de guardarla
       const hashed = await hash(password, 10)
+
+      // Crea el usuario y su perfil vacío
       const u = await prisma.user.create({
         data: {
           name: fullName,
@@ -53,6 +68,8 @@ export default async function handler(
           profile: { select: { avatarUrl: true } }
         }
       })
+
+      // Devuelve los datos formateados del nuevo usuario
       const newUser = {
         id: u.id,
         user: { name: u.name, image: u.profile?.avatarUrl ?? '' },
@@ -62,6 +79,7 @@ export default async function handler(
       return res.status(201).json(newUser)
     }
 
+    // Si el método no está permitido
     default:
       res.setHeader('Allow', ['GET', 'POST'])
       return res.status(405).end(`Method ${req.method} Not Allowed`)

@@ -1,5 +1,8 @@
 // src/pages/users/index.tsx
 
+// Página de administración de usuarios
+// Solo accesible para administradores autenticados
+
 import React, { useState } from 'react'
 import { GetServerSideProps } from 'next'
 import prisma from '@/config/prisma'
@@ -13,6 +16,7 @@ import { Plus } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { RoleKey } from '@/lib/auth'
 
+// Estructura de usuario para la tabla
 type UserTableItem = {
   id: string
   user: { name: string; image: string }
@@ -20,11 +24,13 @@ type UserTableItem = {
   role: RoleKey
 }
 
+// Props que recibe el componente desde getServerSideProps
 type Props = {
   user: UserPayload
   initialUsers: UserTableItem[]
 }
 
+// Carga los usuarios desde la base de datos y valida acceso de administrador
 export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   //Autenticación + rol
   const auth = await withAuth()(ctx)
@@ -55,6 +61,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
   return { props: { user, initialUsers } }
 }
 
+// Página principal
 export default function UsersPage({ user, initialUsers }: Props) {
   const [usersData, setUsersData] = useState<UserTableItem[]>(initialUsers)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -64,7 +71,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
   const [formData, setFormData] = useState<UserFormData>({ fullName: '', email: '', role: '', password: '' })
   const { toast } = useToast()
 
-  // CREATE
+  // Crear usuario
   const handleCreate = async () => {
     const res = await fetch('/api/users', {
       method: 'POST',
@@ -81,7 +88,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
     toast({ title: 'Usuario creado' })
   }
 
-  // UPDATE
+  // Actualizar usuario
   const handleUpdate = async () => {
     if (!selectedUser) return
     const res = await fetch(`/api/users/${selectedUser.id}`, {
@@ -109,7 +116,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
     toast({ title: 'Usuario actualizado' })
   }
 
-  // DELETE
+  // Eliminar usuario
   const handleDelete = async () => {
     if (!selectedUser) return
     const res = await fetch(`/api/users/${selectedUser.id}`, {
@@ -124,6 +131,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
     toast({ title: 'Usuario eliminado' })
   }
 
+ // Acciones para abrir los modales
  const onNew = () => {
     setFormData({ fullName: '', email: '', role: '', password: '' })
     setIsCreateModalOpen(true)
@@ -140,6 +148,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
     setIsDeleteModalOpen(true)
   }
 
+  // Definición de columnas para la tabla
   const userColumns: Column<UserTableItem>[] = [
     { key: 'user',    label: 'Usuario', type: 'avatar' },
     { key: 'email',   label: 'Email',   type: 'text'   },
@@ -156,6 +165,7 @@ export default function UsersPage({ user, initialUsers }: Props) {
     { key: 'actions', label: 'Acciones', type: 'actions' }
   ]
 
+  // Render de la interfaz
   return (
     <Layout user={user} childrenTitle="Usuarios" childrenSubitle="Administra los usuarios">
       <section className="mb-6 mt-15 w-full">
