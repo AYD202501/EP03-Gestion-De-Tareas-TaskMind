@@ -79,7 +79,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       </p>
 
       {/* Fecha límite */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
         <Calendar className="h-4 w-4 text-gray-400" />
         <span>{task.dueDate}</span>
       </div>

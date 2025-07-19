@@ -51,7 +51,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
         {/* Encabezado de la columna */}
         <div className="flex items-center gap-2 mb-4">
           {/* Indicador de color según el estado */}
-          <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
+          <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}/>
           {/* Título de la columna */}
           <h3 className="font-semibold text-gray-900">{title}</h3>
           

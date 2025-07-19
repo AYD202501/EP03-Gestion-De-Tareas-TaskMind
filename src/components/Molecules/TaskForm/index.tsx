@@ -116,23 +116,6 @@ const TaskForm: React.FC<TaskFormProps> = ({
           onChange={e => change('dueDate', e.target.value)}
         />
       </div>
-
-      <div>
-        <Label htmlFor="tags">Etiquetas</Label>
-        <Select value={data.tags} onValueChange={(value) => handleChange('tags', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona etiquetas" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Urgente">Urgente</SelectItem>
-            <SelectItem value="Alta prioridad">Alta prioridad</SelectItem>
-            <SelectItem value="Media prioridad">Media prioridad</SelectItem>
-            <SelectItem value="Baja prioridad">Baja prioridad</SelectItem>
-            <SelectItem value="Frontend">Frontend</SelectItem>
-            <SelectItem value="Backend">Backend</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
     </div>
   )
 }

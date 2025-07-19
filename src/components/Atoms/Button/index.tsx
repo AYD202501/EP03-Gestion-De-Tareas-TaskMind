@@ -46,10 +46,8 @@ const Button = ({ className, variant, size, children, ...props }: ButtonProps) =
   return (
     <button 
       // Aplica las clases según las variantes elegidas y las adicionales (className)
-      className={cn(buttonVariants({ variant, size, className }))} 
-      {...props}  // Pasa cualquier otra prop HTML estándar (onClick, disabled, etc.)
-    >
-      {children}  // Renderiza el contenido interno del botón
+      className={cn(buttonVariants({ variant, size, className }))} {...props}>
+      {children}
     </button>
   )
 }
