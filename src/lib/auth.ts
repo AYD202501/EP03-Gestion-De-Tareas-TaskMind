@@ -1,3 +1,5 @@
+// src/lib/auth.ts
+
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { getUserFromCookie } from '@/lib/getUserFromCookie'
 import {
@@ -17,14 +19,11 @@ export type UserPayload = {
   avatarUrl: string | null
 }
 
-// Función para obtener la clave secreta de forma lazy (solo cuando se necesite)
 function getSecretKey(): string {
   const secret = process.env.JWT_SECRET
-  
   if (!secret) {
     throw new Error('JWT_SECRET no está definido en las variables de entorno')
   }
-  
   return secret
 }
 
@@ -32,15 +31,14 @@ export function signToken(
   user: UserPayload,
   expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
-  const secretKey = getSecretKey() // Obtenemos la clave solo cuando la necesitamos
+  const secretKey = getSecretKey()
   return jwt.sign(user, secretKey, { expiresIn })
 }
 
 export function verifyToken(token: string): UserPayload {
   try {
-    const secretKey = getSecretKey() // Obtenemos la clave solo cuando la necesitamos
+    const secretKey = getSecretKey()
     const decoded = jwt.verify(token, secretKey)
-    
     if (
       typeof decoded === 'object' &&
       decoded !== null &&
@@ -51,7 +49,7 @@ export function verifyToken(token: string): UserPayload {
       return decoded as UserPayload
     }
     throw new Error('Token inválido')
-  } catch (error) {
+  } catch {
     throw new Error('Token inválido o expirado')
   }
 }
@@ -75,7 +73,6 @@ export function withAuth<
         where: { id: tokenUser.id },
         include: { profile: true }
       })
-      
       if (!dbUser) {
         return { redirect: { destination: '/login', permanent: false } }
       }
@@ -91,7 +88,7 @@ export function withAuth<
       if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
         return { redirect: { destination: '/dashboard', permanent: false } }
       }
-      
+
       if (gssp) {
         const result = await gssp(ctx)
         if ('props' in result) {
@@ -104,12 +101,12 @@ export function withAuth<
         }
         return result as GetServerSidePropsResult<P & { user: UserPayload }>
       }
-      
+
       return {
         props: { user } as P & { user: UserPayload }
       }
-    } catch (error) {
-      console.error('Error en withAuth:', error)
+    } catch (_err) {
+      console.error('Error en withAuth:', _err)
       return { redirect: { destination: '/login', permanent: false } }
     }
   }

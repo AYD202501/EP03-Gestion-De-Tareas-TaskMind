@@ -1,14 +1,17 @@
+// src/components/Molecules/KanbanColumn.tsx
+
 import React from 'react'
 import TaskCard from '@/components/Molecules/TaskCard'
 
-/** El tipo común para cada tarjeta del Kanban */
+// Extendemos para incluir projectId si luego quieres usarlo
 export type BoardTask = {
   id: string
   title: string
   description: string | null
   status: 'Pendiente' | 'En progreso' | 'En Revisión' | 'Completado'
-  dueDate: string 
-  assignedTo: string 
+  dueDate: string
+  assignedTo: string
+  projectId: string
 }
 
 interface KanbanColumnProps {
@@ -16,13 +19,15 @@ interface KanbanColumnProps {
   status: BoardTask['status']
   tasks: BoardTask[]
   onStatusChange: (taskId: string, newStatus: BoardTask['status']) => void
+
+  /** callbacks nuevos */
+  onEdit:   (task: BoardTask) => void
+  onDelete: (taskId: string) => void
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({
-  title,
-  status,
-  tasks,
-  onStatusChange
+  title, status, tasks,
+  onStatusChange, onEdit, onDelete
 }) => {
   const getStatusColor = (s: BoardTask['status']) => {
     switch (s) {
@@ -44,12 +49,15 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
             {tasks.length}
           </span>
         </div>
+
         <div className="space-y-3">
           {tasks.map(task => (
             <TaskCard
               key={task.id}
               task={task}
               onStatusChange={onStatusChange}
+              onEdit={() => onEdit(task)}
+              onDelete={() => onDelete(task.id)}
             />
           ))}
         </div>

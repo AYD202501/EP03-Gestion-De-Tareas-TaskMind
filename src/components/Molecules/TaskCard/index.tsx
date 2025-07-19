@@ -1,3 +1,5 @@
+// src/components/Molecules/TaskCard.tsx
+
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,10 +14,14 @@ import type { BoardTask } from '@/components/Molecules/KanbanColumn'
 
 interface TaskCardProps {
   task: BoardTask
-  onStatusChange: (taskId: string, newStatus: BoardTask['status']) => void
+  onStatusChange: (id: string, newStatus: BoardTask['status']) => void
+  onEdit:   () => void
+  onDelete: () => void
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
+const TaskCard: React.FC<TaskCardProps> = ({
+  task, onStatusChange, onEdit, onDelete
+}) => {
   const getStatusColor = (s: BoardTask['status']) => {
     switch (s) {
       case 'Pendiente':   return 'bg-yellow-100 text-yellow-800'
@@ -26,15 +32,8 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
     }
   }
 
-  const getStatusOptions = (current: BoardTask['status']) => {
-    const all: BoardTask['status'][] = [
-      'Pendiente',
-      'En progreso',
-      'En Revisión',
-      'Completado'
-    ]
-    return all.filter(s => s !== current)
-  }
+  const options = ['Pendiente','En progreso','En Revisión','Completado']
+    .filter(s => s !== task.status)
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-4 mb-3 hover:shadow-md transition-shadow">
@@ -48,49 +47,48 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onStatusChange }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Editar</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600">Eliminar</DropdownMenuItem>
+            <DropdownMenuItem onClick={onEdit}>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete} className="text-red-600">
+              Eliminar
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* status badge */}
+      {/* badge estado */}
       <Badge className={`${getStatusColor(task.status)} text-xs mb-3`}>
         {task.status}
       </Badge>
 
-      {/* description */}
+      {/* descripción */}
       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
         {task.description}
       </p>
 
-      {/* due date */}
+      {/* fecha límite */}
       <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
         <Calendar className="h-4 w-4 text-gray-400" />
         <span>{task.dueDate}</span>
       </div>
 
-      {/* assignedTo name only */}
+      {/* assignedTo y mover a… */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-gray-700">
           {task.assignedTo}
         </span>
-
-        {/* mover a… */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 text-xs">
-              Mover a
-              <ChevronDown className="h-3 w-3 ml-1" />
+              Mover a <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {getStatusOptions(task.status).map(status => (
+            {options.map(s => (
               <DropdownMenuItem
-                key={status}
-                onClick={() => onStatusChange(task.id, status)}
+                key={s}
+                onClick={() => onStatusChange(task.id, s as BoardTask['status'])}
               >
-                {status}
+                {s}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

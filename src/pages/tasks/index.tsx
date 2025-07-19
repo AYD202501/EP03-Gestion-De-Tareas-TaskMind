@@ -1,6 +1,7 @@
 // src/pages/tasks/index.tsx
+
 import React, { useState } from 'react'
-import { GetServerSideProps } from 'next'
+import type { GetServerSideProps } from 'next'
 import prisma from '@/config/prisma'
 import { withAuth, UserPayload } from '@/lib/auth'
 import Layout from '@/components/Organisms/Layout'
@@ -12,40 +13,29 @@ import { Plus } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
 interface TasksPageProps {
-  user: UserPayload
+  user:        UserPayload
   initialTasks: BoardTask[]
-  projects: { id: string; name: string }[]
-  users: { id: string; name: string }[]
+  projects:    { id: string; name: string }[]
+  users:       { id: string; name: string }[]
 }
 
 export const getServerSideProps: GetServerSideProps<TasksPageProps> = withAuth(
   async () => {
-
+    // fetch tasks
     const tasks = await prisma.task.findMany({
       include: { assignedTo: { select: { name: true } } },
       orderBy: { dueDate: 'asc' }
     })
-
-
-    const projects = await prisma.project.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' }
-    })
-
-    const users = await prisma.user.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' }
-    })
-
+    // map to BoardTask
     const initialTasks: BoardTask[] = tasks.map(t => ({
       id:          t.id,
       title:       t.title,
       description: t.description,
       status:
-        t.status === 'Pending'     ? 'Pendiente' :
-        t.status === 'In_process'  ? 'En progreso' :
-        t.status === 'Review'      ? 'En Revisión' :
-        t.status === 'Finished'    ? 'Completado' :
+        t.status === 'Pending'    ? 'Pendiente' :
+        t.status === 'In_process' ? 'En progreso' :
+        t.status === 'Review'     ? 'En Revisión' :
+        t.status === 'Finished'   ? 'Completado' :
         'Pendiente',
       dueDate: t.dueDate
         ? (() => {
@@ -56,95 +46,149 @@ export const getServerSideProps: GetServerSideProps<TasksPageProps> = withAuth(
             return `${dd}/${mm}/${yy}`
           })()
         : '',
-      assignedTo: t.assignedTo?.name ?? '—'
+      assignedTo: t.assignedTo?.name ?? '—',
+      projectId:  t.projectId ?? ''
     }))
 
+    // fetch select-lists
+    const projects = await prisma.project.findMany({
+      select: { id: true, name: true },
+      orderBy:{ name:'asc' }
+    })
+    const users = await prisma.user.findMany({
+      select: { id: true, name: true },
+      orderBy:{ name:'asc' }
+    })
+
     return {
-      props: {
-        initialTasks,
-        projects,
-        users
-      }
+      props: { initialTasks, projects, users }
     }
   }
 )
 
 export default function TasksPage({
-  user,
-  initialTasks,
-  projects,
-  users
+  user, initialTasks, projects, users
 }: TasksPageProps) {
   const [tasks, setTasks] = useState<BoardTask[]>(initialTasks)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [modal, setModal] = useState<'create'|'edit'|null>(null)
+  const [selected, setSelected] = useState<BoardTask|null>(null)
   const [formData, setFormData] = useState<TaskFormData>({
-    title: '',
-    description: '',
-    project: '',
-    assignedTo: '',
-    dueDate: '',
-    category: '',
-    tags: ''
+    title:'', description:'', project:'', assignedTo:'', dueDate:''
   })
   const { toast } = useToast()
 
-  const handleStatusChange = (id: string, newStatus: BoardTask['status']) =>
-    setTasks(prev =>
-      prev.map(t => t.id === id ? { ...t, status: newStatus } : t)
-    )
+  const mapToEnum = (s: BoardTask['status']) =>
+    s === 'Pendiente'    ? 'Pending'    :
+    s === 'En progreso'  ? 'In_process' :
+    s === 'En Revisión'  ? 'Review'     :
+    s === 'Completado'   ? 'Finished'   :
+    'Pending'
 
-  const handleNewTask = () => {
-    setFormData({
-      title: '',
-      description: '',
-      project: '',
-      assignedTo: '',
-      dueDate: '',
-      category: '',
-      tags: ''
-    })
-    setIsCreateModalOpen(true)
-  }
-
-  const handleCreateTask = async () => {
-    const res = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify(formData)
+  // cambia estado persistiendo
+  const handleStatusChange = async (id: string, newStatus: BoardTask['status']) => {
+    const res = await fetch(`/api/tasks/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status: mapToEnum(newStatus) })
     })
     if (!res.ok) {
       const err = await res.json()
       return toast({ title:'Error', description: err.error })
+    }
+    setTasks(tasks.map(t => t.id===id ? { ...t, status: newStatus } : t))
+  }
+
+  // abrir crear
+  const openCreate = () => {
+    setSelected(null)
+    setFormData({ title:'', description:'', project:'', assignedTo:'', dueDate:'' })
+    setModal('create')
+  }
+  // abrir editar
+  const openEdit = (task: BoardTask) => {
+    setSelected(task)
+    setFormData({
+      title:       task.title,
+      description: task.description ?? '',
+      project:     task.projectId,
+      assignedTo:  users.find(u=>u.name===task.assignedTo)?.id ?? '',
+      dueDate:     task.dueDate.split('/').reverse().join('-') // yyyy-mm-dd
+    })
+    setModal('edit')
+  }
+
+  // crear
+  const handleCreate = async () => {
+    const res = await fetch('/api/tasks', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(formData)
+    })
+    if (!res.ok) {
+      const e = await res.json()
+      return toast({ title:'Error', description: e.error })
     }
     const t = await res.json()
     const newTask: BoardTask = {
       id:          t.id,
       title:       t.title,
       description: t.description,
-      status:
-        t.status === 'Pending'     ? 'Pendiente' :
-        t.status === 'In_process'  ? 'En progreso' :
-        t.status === 'Review'      ? 'En Revisión' :
-        t.status === 'Finished'    ? 'Completado' :
-        'Pendiente',
-      dueDate: t.dueDate
-        ? (() => {
-            const d  = new Date(t.dueDate)
-            const dd = String(d.getDate()).padStart(2,'0')
-            const mm = String(d.getMonth()+1).padStart(2,'0')
-            const yy = d.getFullYear()
-            return `${dd}/${mm}/${yy}`
-          })()
-        : '',
-      assignedTo: t.assignedTo?.name ?? '—'
+      status:      'Pendiente',
+      dueDate:     formData.dueDate.split('-').reverse().join('/'),
+      assignedTo:  users.find(u=>u.id===t.assignedToId)?.name ?? '—',
+      projectId:   t.projectId ?? ''
     }
-    setTasks(prev => [...prev, newTask])
-    setIsCreateModalOpen(false)
+    setTasks([...tasks, newTask])
+    setModal(null)
     toast({ title:'Tarea creada' })
   }
 
-  const getTasksByStatus = (status: BoardTask['status']) =>
-    tasks.filter(t => t.status === status)
+  // actualizar
+  const handleUpdate = async () => {
+    if (!selected) return
+    const res = await fetch(`/api/tasks/${selected.id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        ...formData,
+        status: mapToEnum(selected.status)
+      })
+    })
+    if (!res.ok) {
+      const e = await res.json()
+      return toast({ title:'Error', description: e.error })
+    }
+    const t = await res.json()
+    setTasks(tasks.map(x =>
+      x.id === t.id
+        ? {
+            id: t.id,
+            title: t.title,
+            description: t.description,
+            status: selected.status,
+            dueDate: formData.dueDate.split('-').reverse().join('/'),
+            assignedTo: users.find(u=>u.id===t.assignedToId)?.name ?? '—',
+            projectId: t.projectId ?? ''
+          }
+        : x
+    ))
+    setModal(null)
+    toast({ title:'Tarea actualizada' })
+  }
+
+  // eliminar
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/tasks/${id}`, { method:'DELETE' })
+    if (!res.ok) {
+      const e = await res.json()
+      return toast({ title:'Error', description: e.error })
+    }
+    setTasks(tasks.filter(x=>x.id!==id))
+    toast({ title:'Tarea eliminada' })
+  }
+
+  const getTasksByStatus = (st: BoardTask['status']) =>
+    tasks.filter(t => t.status === st)
 
   const columns = [
     { title:'Pendiente',   status:'Pendiente' },
@@ -154,18 +198,11 @@ export default function TasksPage({
   ] as const
 
   return (
-    <Layout
-      user={user}
-      childrenTitle="Tareas"
-      childrenSubitle="Vista general de todas las tareas del sistema"
-    >
+    <Layout user={user} childrenTitle="Tareas" childrenSubitle="Tablero de tareas">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Tablero de tareas</h2>
-        <Button
-          onClick={handleNewTask}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" /> Nueva tarea
+        <h2 className="text-xl font-semibold">Tablero de tareas</h2>
+        <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Plus className="mr-2"/>Nueva tarea
         </Button>
       </div>
 
@@ -177,25 +214,34 @@ export default function TasksPage({
             status={col.status}
             tasks={getTasksByStatus(col.status)}
             onStatusChange={handleStatusChange}
+            onEdit={openEdit}
+            onDelete={handleDelete}
           />
         ))}
       </div>
 
       <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={modal==='create'}
+        onClose={()=>setModal(null)}
         title="Nueva Tarea"
-        subtitle="Crea una nueva tarea y asígnala a un colaborador."
-        primaryButtonText="Agregar"
-        onPrimaryAction={handleCreateTask}
+        subtitle="Rellena los datos"
+        primaryButtonText="Crear"
+        onPrimaryAction={handleCreate}
       >
+        <TaskForm data={formData} onChange={setFormData}
+                  projects={projects} users={users} />
+      </Modal>
 
-        <TaskForm
-          data={formData}
-          onChange={setFormData}
-          projects={projects}
-          users={users}
-        />
+      <Modal
+        isOpen={modal==='edit'}
+        onClose={()=>setModal(null)}
+        title="Editar Tarea"
+        subtitle="Actualiza los datos"
+        primaryButtonText="Guardar"
+        onPrimaryAction={handleUpdate}
+      >
+        <TaskForm data={formData} onChange={setFormData}
+                  projects={projects} users={users} />
       </Modal>
     </Layout>
   )
