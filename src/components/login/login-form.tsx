@@ -39,11 +39,9 @@ export default function LoginForm() {
       if ('error' in result) {
         setErrorMsg(result.error);
       } else {
-        // Si el backend ya nos dio la ruta, la usamos:
         if (result.redirectTo) {
           router.push(result.redirectTo);
         } else {
-          // Si no, mapeamos según rol (¡rellena o ajusta estas rutas cuando existan!)
           if (result.role === 'Admin') {
             router.push('/dashboard');
           } else if (result.role === 'ProjectManager') {
