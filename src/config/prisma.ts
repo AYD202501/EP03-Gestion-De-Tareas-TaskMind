@@ -1,22 +1,19 @@
-// src/config/prisma.ts
-import { PrismaClient } from '@prisma/client'
+/* eslint-disable no-var */
+import { PrismaClient } from '@prisma/client';
 
 declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined
+  var prismaGlobal: PrismaClient;
 }
 
-const prisma = global.prisma ?? new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-  log: ['error'],
-})
+let prisma: PrismaClient;
 
-if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma
+if (process.env.NODE_ENV === 'production') {
+  prisma = new PrismaClient();
+} else {
+  if (!global.prismaGlobal) {
+    global.prismaGlobal = new PrismaClient();
+  }
+  prisma = global.prismaGlobal;
 }
 
-export default prisma
+export default prisma;
