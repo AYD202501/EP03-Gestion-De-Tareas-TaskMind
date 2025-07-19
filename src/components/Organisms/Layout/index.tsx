@@ -3,20 +3,27 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/Molecules/app-sidebar';
 import { Header } from '@/components/Organisms/Header';
 import { UserPayload } from '@/lib/auth';
+import Head from 'next/head';
 
 interface Props {
   user: UserPayload
   children: ReactNode
   childrenTitle: string
   childrenSubitle: string
+  pageTitle?: string
+  pageIcon?: string
 }
 
-const Layout = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
+const Layout = ({ user, children, childrenTitle, childrenSubitle, pageTitle, pageIcon = '/favicon.ico' }: Props) => {
   return (
     <div className="flex min-h-screen bg-background">
       <SidebarProvider>
         <AppSidebar user={user} />
         <div className='flex flex-1 flex-col'>
+          <Head>
+            <title>{pageTitle ?? childrenTitle + ' - TaskMind'}</title>
+            <link rel="icon" href={pageIcon} />
+          </Head>
           <Header user={user} />
           <main className="flex overflow-auto h-full">
             <div className="flex flex-col items-start h-full w-full justify-start">
