@@ -1,4 +1,8 @@
 // src/pages/dashboard/index.tsx
+// src/pages/index.tsx
+
+// Página de inicio/dashboard para usuarios autenticados
+// Muestra un resumen visual de tareas por proyecto usando un gráfico
 import type { GetServerSideProps } from 'next'
 import { withAuth, UserPayload } from '@/lib/auth'
 import prisma from '@/config/prisma'
@@ -14,6 +18,7 @@ type ChartDatum = {
   done:       number
 }
 
+// Props que recibe el componente desde getServerSideProps
 interface Props {
   user:      UserPayload
   chartData: ChartDatum[]
@@ -75,6 +80,7 @@ const roleTitles: Record<Props['user']['role'], { title: string; subtitle: strin
   Colaborator:     { title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave' },
 }
 
+// Componente principal del dashboard
 export default function Dashboard({ user, chartData }: Props) {
   const { title, subtitle } = roleTitles[user.role]
 

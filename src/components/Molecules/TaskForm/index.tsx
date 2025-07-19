@@ -1,5 +1,4 @@
-// src/components/Molecules/TaskForm.tsx
-
+// Formulario para crear o editar tareas
 import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/select';
 
 export interface TaskFormData {
   title:      string
@@ -20,6 +19,11 @@ export interface TaskFormData {
   dueDate:    string
 }
 
+/**
+ * Props del TaskForm:
+ * - data: valores actuales del formulario
+ * - onChange: función para actualizar los datos
+ */
 interface TaskFormProps {
   data:      TaskFormData
   onChange:  (d: TaskFormData) => void
@@ -27,6 +31,10 @@ interface TaskFormProps {
   users:     { id: string; name: string }[]
 }
 
+/**
+ * TaskForm:
+ * Componente de formulario usado para ingresar o editar la información de una tarea.
+ */
 const TaskForm: React.FC<TaskFormProps> = ({
   data, onChange, projects, users
 }) => {
@@ -35,6 +43,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
   return (
     <div className="space-y-4">
+
+      {/* Campo: Título de la tarea */}
       <div>
         <Label htmlFor="title">Título</Label>
         <Input
@@ -44,6 +54,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
           placeholder="Título de la tarea"
         />
       </div>
+
+      {/* Campo: Descripción de la tarea */}
       <div>
         <Label htmlFor="description">Descripción</Label>
         <Textarea
@@ -53,6 +65,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
           rows={3}
         />
       </div>
+
+      {/* Campo: Selección del proyecto al que pertenece la tarea */}
       <div>
         <Label htmlFor="project">Proyecto</Label>
         <Select
@@ -71,6 +85,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Campo: Selección del responsable asignado */}
       <div>
         <Label htmlFor="assignedTo">Asignar a</Label>
         <Select
@@ -89,6 +105,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Campo: Fecha límite de la tarea */}
       <div>
         <Label htmlFor="dueDate">Fecha límite</Label>
         <Input

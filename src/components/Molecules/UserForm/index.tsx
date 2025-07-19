@@ -1,4 +1,4 @@
-// src/components/Molecules/UserForm.tsx
+// Formulario para registrar o editar usuarios
 
 import React from 'react'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/select'
 import { RoleKey } from '@/lib/auth'
 
+/**
+ * Estructura de datos que manejará el formulario de usuario
+ */
 export interface UserFormData {
   fullName: string
   email: string
@@ -19,30 +22,46 @@ export interface UserFormData {
   password: string
 }
 
+/**
+ * Props del UserForm:
+ * - data: valores actuales del formulario
+ * - onChange: función para actualizar los datos
+ * - includePassword (opcional): si es true, muestra el campo de contraseña
+ */
 interface UserFormProps {
   data: UserFormData
   onChange: (data: UserFormData) => void
-  /** Si es true muestra el campo de contraseña */
   includePassword?: boolean
 }
 
+/**
+ * Opciones disponibles para el campo de roles
+ */
 const roleOptions: { value: UserFormData['role']; label: string }[] = [
   { value: 'Administrator',   label: 'Administrador' },
   { value: 'Project_Manager', label: 'Gestor de proyectos' },
   { value: 'Colaborator',     label: 'Colaborador' },
 ]
 
+/**
+ * UserForm:
+ * Componente que permite ingresar o modificar la información de un usuario.
+ */
 const UserForm: React.FC<UserFormProps> = ({
   data,
   onChange,
   includePassword = true,
 }) => {
+
+  // Función para actualizar un campo específico del formulario
   const handleChange = (field: keyof UserFormData, value: string) => {
     onChange({ ...data, [field]: value } as UserFormData)
   }
 
   return (
     <div className="space-y-4">
+
+      {/* Campo: Nombre completo */}
       <div>
         <Label htmlFor="fullName">Nombre completo</Label>
         <Input
@@ -53,6 +72,7 @@ const UserForm: React.FC<UserFormProps> = ({
         />
       </div>
 
+      {/* Campo: Correo electrónico */}
       <div>
         <Label htmlFor="email">Correo electrónico</Label>
         <Input
@@ -64,6 +84,7 @@ const UserForm: React.FC<UserFormProps> = ({
         />
       </div>
 
+      {/* Campo: Rol del usuario */}
       <div>
         <Label htmlFor="role">Rol</Label>
         <Select
@@ -83,6 +104,7 @@ const UserForm: React.FC<UserFormProps> = ({
         </Select>
       </div>
 
+      {/* Campo: Contraseña (solo si includePassword es true) */}
       {includePassword && (
         <div>
           <Label htmlFor="password">Contraseña</Label>
@@ -95,6 +117,7 @@ const UserForm: React.FC<UserFormProps> = ({
           />
         </div>
       )}
+
     </div>
   )
 }

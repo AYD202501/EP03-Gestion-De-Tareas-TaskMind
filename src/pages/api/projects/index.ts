@@ -1,3 +1,9 @@
+// src/pages/api/projects/index.ts
+
+// API para listar y crear proyectos:
+// - GET: obtiene todos los proyectos con datos del responsable
+// - POST: crea un nuevo proyecto asignado a un usuario existente
+
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
 
@@ -16,7 +22,8 @@ export default async function handler(
 ) {
   try {
     if (req.method === 'GET') {
-      // Listar proyectos
+      // GET /api/projects
+      // Retorna todos los proyectos con su responsable (nombre e imagen)
       const projs = await prisma.project.findMany({
         include: {
           assignedTo: {
@@ -41,7 +48,8 @@ export default async function handler(
     }
 
     if (req.method === 'POST') {
-      // Crear proyecto
+      // POST /api/projects
+      // Crea un nuevo proyecto asignado a un usuario específico
       const { name, description, assignedToId } = req.body as {
         name: string
         description?: string
@@ -77,6 +85,7 @@ export default async function handler(
       })
     }
 
+    // Método no permitido
     res.setHeader('Allow', ['GET','POST'])
     return res.status(405).end(`Method ${req.method} Not Allowed`)
   } catch (err) {

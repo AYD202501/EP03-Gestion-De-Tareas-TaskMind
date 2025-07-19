@@ -1,5 +1,8 @@
 // src/pages/projects/index.tsx
 
+// Página de gestión de proyectos
+// Accesible solo para administradores y project managers
+
 import React, { useState } from 'react'
 import prisma from '@/config/prisma'
 import { withAuth, UserPayload } from '@/lib/auth'
@@ -11,15 +14,18 @@ import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 
+// Estructura de cada proyecto en la tabla
 type ProjectItem = {
   id:             string
   name:           string
   description:    string | null
-  assignedToId:   string       // para el form de edición/creación
-  assignedToName: string       // para mostrar el nombre en la tabla
-  createdAt:      string       // ya formateado como DD/MM/AAAA
+  assignedToId:   string
+  assignedToName: string
+  createdAt:      string
 }
 
+// Carga proyectos y usuarios desde la base de datos
+// Protegido por middleware de autenticación y roles
 export const getServerSideProps = withAuth(
   async () => {
     // 1) Traemos proyectos con su relación assignedTo
@@ -74,6 +80,7 @@ export const getServerSideProps = withAuth(
   ['Administrator', 'Project_Manager']
 )
 
+// Página principal de proyectos
 export default function ProjectsPage({
   user,
   initialProjects,
@@ -92,8 +99,8 @@ export default function ProjectsPage({
     assignedToId: ''
   })
   const { toast } = useToast()
-
-  // Pone el form en blanco o con los valores del proyecto "p"
+  
+  // Reinicia el formulario (para crear o editar)
   const resetForm = (p?: ProjectItem) => {
     if (p) {
       setForm({
@@ -108,7 +115,7 @@ export default function ProjectsPage({
     }
   }
 
-  // CREATE
+// Crear nuevo proyecto
 const onCreate = async () => {
   const res = await fetch('/api/projects', {
     method: 'POST',
@@ -120,10 +127,10 @@ const onCreate = async () => {
     return toast({ title: 'Error', description: err.error })
   }
 
-  // 1) Consumimos el JSON “crudo” de la API
+  //Consumimos el JSON “crudo” de la API
   const raw = await res.json()
 
-  // 2) Helper para formatear la fecha a DD/MM/YYYY
+  //Helper para formatear la fecha a DD/MM/YYYY
   const formatDate = (iso: string) => {
     const d  = new Date(iso)
     const dd = String(d.getDate()).padStart(2, '0')
@@ -132,7 +139,7 @@ const onCreate = async () => {
     return `${dd}/${mm}/${yyyy}`
   }
 
-  // 3) Lo mapeamos al tipo ProjectItem
+  //Lo mapeamos al tipo ProjectItem
   const newProject: ProjectItem = {
     id:              raw.id,
     name:            raw.name,
@@ -142,13 +149,13 @@ const onCreate = async () => {
     createdAt:       formatDate(raw.createdAt),
   }
 
-  // 4) Lo añadimos al estado
+  //Lo añadimos al estado
   setProjects(prev => [...prev, newProject])
   setModal(null)
   toast({ title: 'Proyecto creado' })
 }
 
-  // UPDATE
+  // Actualizar proyecto existente
   const onUpdate = async () => {
     if (!selected) return
     const res = await fetch(`/api/projects/${selected.id}`, {
@@ -178,7 +185,7 @@ const onCreate = async () => {
     toast({ title: 'Proyecto actualizado' })
   }
 
-  // DELETE
+  // Eliminar proyecto
   const onDelete = async () => {
     if (!selected) return
     const res = await fetch(`/api/projects/${selected.id}`, { method: 'DELETE' })
@@ -191,6 +198,7 @@ const onCreate = async () => {
     toast({ title: 'Proyecto eliminado' })
   }
 
+  // Columnas de la tabla de proyectos
   const columns: Column<ProjectItem>[] = [
     { key:'name',           label:'Proyecto',    type:'text'   },
     { key:'assignedToName', label:'Responsable', type:'text'   },
@@ -199,6 +207,7 @@ const onCreate = async () => {
     { key:'actions',        label:'Acciones',    type:'actions'}
   ]
 
+  // Render del layout y los componentes visuales
   return (
     <Layout user={user} childrenTitle="Proyectos" childrenSubitle="Administra los proyectos">
       {/* Header */}
