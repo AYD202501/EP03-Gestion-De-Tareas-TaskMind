@@ -1,3 +1,5 @@
+// src/lib/auth.ts
+
 import jwt, { SignOptions } from 'jsonwebtoken'
 import { getUserFromCookie } from '@/lib/getUserFromCookie'
 import {
@@ -17,45 +19,31 @@ export type UserPayload = {
   avatarUrl: string | null
 }
 
-// Función para obtener la clave secreta de forma lazy (solo cuando se necesite)
-function getSecretKey(): string {
-  const secret = process.env.JWT_SECRET
-  
-  if (!secret) {
-    throw new Error('JWT_SECRET no está definido en las variables de entorno')
-  }
-  
-  return secret
+export const SECRET_KEY: string = process.env.JWT_SECRET as string
+if (!SECRET_KEY) {
+  throw new Error('JWT_SECRET no está definido')
 }
 
 export function signToken(
   user: UserPayload,
   expiresIn: SignOptions['expiresIn'] = '7d'
 ): string {
-  const secretKey = getSecretKey() // Obtenemos la clave solo cuando la necesitamos
-  return jwt.sign(user, secretKey, { expiresIn })
+  return jwt.sign(user, SECRET_KEY, { expiresIn })
 }
 
 export function verifyToken(token: string): UserPayload {
-  try {
-    const secretKey = getSecretKey() // Obtenemos la clave solo cuando la necesitamos
-    const decoded = jwt.verify(token, secretKey)
-    
-    if (
-      typeof decoded === 'object' &&
-      decoded !== null &&
-      'id' in decoded &&
-      'email' in decoded &&
-      'role' in decoded
-    ) {
-      return decoded as UserPayload
-    }
-    throw new Error('Token inválido')
-  } catch (error) {
-    throw new Error('Token inválido o expirado')
+  const decoded = jwt.verify(token, SECRET_KEY)
+  if (
+    typeof decoded === 'object' &&
+    decoded !== null &&
+    'id' in decoded &&
+    'email' in decoded &&
+    'role' in decoded
+  ) {
+    return decoded as UserPayload
   }
+  throw new Error('Token inválido')
 }
-
 export function withAuth<
   P extends Record<string, unknown> = Record<string, unknown>
 >(
@@ -65,52 +53,44 @@ export function withAuth<
   return async (
     ctx: GetServerSidePropsContext
   ): Promise<GetServerSidePropsResult<P & { user: UserPayload }>> => {
-    try {
-      const tokenUser = getUserFromCookie(ctx.req)
-      if (!tokenUser) {
-        return { redirect: { destination: '/login', permanent: false } }
-      }
+    const tokenUser = getUserFromCookie(ctx.req)
+    if (!tokenUser) {
+      return { redirect: { destination: '/login', permanent: false } }
+    }
 
-      const dbUser = await prisma.user.findUnique({
-        where: { id: tokenUser.id },
-        include: { profile: true }
-      })
-      
-      if (!dbUser) {
-        return { redirect: { destination: '/login', permanent: false } }
-      }
+    const dbUser = await prisma.user.findUnique({
+      where: { id: tokenUser.id },
+      include: { profile: true }
+    })
+    if (!dbUser) {
+      return { redirect: { destination: '/login', permanent: false } }
+    }
 
-      const user: UserPayload = {
-        id:        dbUser.id,
-        email:     dbUser.email,
-        role:      dbUser.role,
-        name:      dbUser.name   ?? null,
-        avatarUrl: dbUser.profile?.avatarUrl ?? null
-      }
+    const user: UserPayload = {
+      id:        dbUser.id,
+      email:     dbUser.email,
+      role:      dbUser.role,
+      name:      dbUser.name   ?? null,
+      avatarUrl: dbUser.profile?.avatarUrl ?? null
+    }
 
-      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-        return { redirect: { destination: '/dashboard', permanent: false } }
-      }
-      
-      if (gssp) {
-        const result = await gssp(ctx)
-        if ('props' in result) {
-          return {
-            props: {
-              ...(result.props as P),
-              user
-            }
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+      return { redirect: { destination: '/dashboard', permanent: false } }
+    }
+    if (gssp) {
+      const result = await gssp(ctx)
+      if ('props' in result) {
+        return {
+          props: {
+            ...(result.props as P),
+            user
           }
         }
-        return result as GetServerSidePropsResult<P & { user: UserPayload }>
       }
-      
-      return {
-        props: { user } as P & { user: UserPayload }
-      }
-    } catch (error) {
-      console.error('Error en withAuth:', error)
-      return { redirect: { destination: '/login', permanent: false } }
+      return result as GetServerSidePropsResult<P & { user: UserPayload }>
+    }
+    return {
+      props: { user } as P & { user: UserPayload }
     }
   }
 }
