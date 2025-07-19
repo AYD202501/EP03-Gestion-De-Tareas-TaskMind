@@ -42,8 +42,8 @@ export default async function handler(
   }
 
   try {
-    // Busca el usuario por email
-    const user = await prisma.user.findUnique({
+        // Busca el usuario por email
+    const user = await prisma?.user?.findUnique({
       where: { email },
       select: {
         id: true,

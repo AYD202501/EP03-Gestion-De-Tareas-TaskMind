@@ -11,7 +11,7 @@ type ErrorResponse = { error: string }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<{} | ErrorResponse>
+  res: NextApiResponse<object | ErrorResponse>
 ) {
   const { id } = req.query
 

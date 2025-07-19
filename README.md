@@ -1,41 +1,77 @@
-# EP03-GestionDeTareas
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+## Integrantes del proyecto
 
-## Getting Started
+Simon Correa Rios - 1033179644 
 
-First, run the development server:
+Ana Maria Granada Rodas - 1000758426
+
+Juan Pablo Ramos Vélez - 1193518347
+
+Jesus Estiven Torres Quintero - 1000759253
+
+## TaskMind – Sistema de Gestión de Tareas
+TaskMind es una plataforma web enfocada en la gestión eficiente de tareas y proyectos colaborativos, diseñada para optimizar el trabajo en equipo. Permite a los usuarios gestionar tareas, asignarlas, priorizarlas, seguir su avance en tiempo real y administrar proyectos desde un mismo espacio.
+
+# Propósito del Proyecto
+El propósito de **TaskMind** es ofrecer una plataforma web eficiente y colaborativa para la gestión de tareas y proyectos, permitiendo a equipos de trabajo organizar, asignar y supervisar actividades de manera centralizada. El sistema busca optimizar la productividad mediante un tablero visual tipo Kanban, gestión de usuarios por roles (administrador, gestor de proyectos y colaborador), control del estado de las tareas y generación de reportes gráficos. Su diseño responsivo y acceso basado en roles facilita el control del flujo de trabajo en proyectos pequeños y medianos, todo desde un entorno web intuitivo y accesible.
+
+
+El sistema está dirigido a:
+
+- Administrador: gestiona usuarios y proyectos.
+
+- Gestor de Proyecto: organiza y supervisa tareas y proyectos.
+- Colaborador: ejecuta y actualiza sus tareas asignadas.
+
+
+---
+# Tecnologías Principales 
+Next.js 14 (App Router)
+
+TypeScript
+
+Tailwind CSS
+
+Recharts (Gráficos)
+
+Supabase (Base de datos)
+
+
+Vercel (Despliegue)
+
+---
+# Ejecutar el proyecto
+
+Primero instalamos yarn o npm
+
+```bash
+npm install
+
+#or
+
+yarn install
+```
+
+Despues creamos el archivo .env y lo configuramos
+
+```bash
+DATABASE_URL="TuUrl"
+JWT_SECRET="TuContraseña"
+```
+
+Y nos conectamos con la base de datos
+
+```bash
+npx prisma generate
+```
+
+Ejecutamos
 
 ```bash
 npm run dev
-# or
+
+#or
+
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Y abres [http://localhost:3000](http://localhost:3000) en tu navegador

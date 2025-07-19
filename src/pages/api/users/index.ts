@@ -6,14 +6,23 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '@/config/prisma'
-import { hash } from 'bcryptjs'
 import type { Role } from '@prisma/client'
 
 type ErrorResponse = { error: string }
 
+type UserDTO = {
+  id: string
+  user: {
+    name: string
+    image: string
+  }
+  email: string
+  role: Role
+}
+
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<any | ErrorResponse>
+  res: NextApiResponse<UserDTO[] | UserDTO | ErrorResponse>
 ) {
   switch (req.method) {
 
@@ -52,16 +61,13 @@ export default async function handler(
         return res.status(400).json({ error: 'Todos los campos son requeridos' })
       }
 
-      // Hashea la contraseña antes de guardarla
-      const hashed = await hash(password, 10)
-
       // Crea el usuario y su perfil vacío
       const u = await prisma.user.create({
         data: {
           name: fullName,
           email,
           role: role as Role,
-          password: hashed,
+          password,
           profile: { create: {} }
         },
         include: {

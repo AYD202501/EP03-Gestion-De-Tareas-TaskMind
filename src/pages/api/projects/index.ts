@@ -13,7 +13,6 @@ type ProjectResponse = {
   description: string | null
   assignedTo:  { name: string; image: string | null }
   createdAt:   string
-  updatedAt:   string
 }
 type ErrorResponse = { error: string }
 
@@ -43,8 +42,7 @@ export default async function handler(
           name:  p.assignedTo?.name  ?? '',
           image: p.assignedTo?.profile?.avatarUrl ?? null
         },
-        createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString(),
+        createdAt: p.createdAt.toISOString()
       }))
       return res.status(200).json(data)
     }
@@ -83,8 +81,7 @@ export default async function handler(
           name:  p.assignedTo?.name  ?? '',
           image: p.assignedTo?.profile?.avatarUrl ?? null
         },
-        createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString(),
+        createdAt: p.createdAt.toISOString()
       })
     }
 

@@ -1,18 +1,20 @@
 import React, { ReactNode } from 'react';
-import { SidebarProvider } from '@/components/ui/sidebar';         // Proveedor de contexto para controlar visibilidad del sidebar
-import { AppSidebar } from '@/components/Molecules/app-sidebar';   // Componente visual del sidebar
-import { Header } from '@/components/Organisms/Header';            // Header principal del sistema
-import { UserPayload } from '@/lib/auth';                           // Definición del usuario autenticado
-
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/Molecules/app-sidebar';
+import { Header } from '@/components/Organisms/Header';
+import { UserPayload } from '@/lib/auth';
+import Head from 'next/head';
 
 interface Props {
   user: UserPayload                   // Usuario autenticado (datos)
   children: ReactNode                 // Contenido interno a renderizar dentro del layout
   childrenTitle: string               // Título de la vista
   childrenSubitle: string             // Subtítulo de la vista
+  pageTitle?: string                  // Título de la pagina
+  pageIcon?: string                   // Icono de la página
 }
 
-const Layout = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
+const Layout = ({ user, children, childrenTitle, childrenSubitle, pageTitle, pageIcon = '/favicon.ico' }: Props) => {
   return (
     <div className="flex min-h-screen bg-background">
       
@@ -23,8 +25,10 @@ const Layout = ({ user, children, childrenTitle, childrenSubitle }: Props) => {
 
         {/* Contenedor principal (derecho) */}
         <div className='flex flex-1 flex-col'>
-          
-          {/* Header superior con menú de usuario */}
+          <Head>
+            <title>{pageTitle ?? childrenTitle + ' - TaskMind'}</title>
+            <link rel="icon" href={pageIcon} />
+          </Head>
           <Header user={user} />
 
           {/* Área principal */}

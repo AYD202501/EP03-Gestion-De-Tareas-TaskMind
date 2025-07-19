@@ -1,10 +1,11 @@
 // Importación de componentes y dependencias necesarias
-import Button from '@/components/Atoms/Button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useRouter } from 'next/router'
-import { useState } from 'react'
+import Button from '@/components/Atoms/Button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 
 // Define el tipo que representa el resultado del intento de login
 // Puede ser un error o un objeto con el rol del usuario y la ruta de redirección
@@ -17,6 +18,7 @@ export default function LoginForm() {
   const router = useRouter() // Hook para redireccionar después del login
   const [errorMsg, setErrorMsg] = useState<string | null>(null) // Estado para mostrar errores
   const [loading, setLoading] = useState(false) // Estado para mostrar el botón en carga
+  const { toast } = useToast();
 
   // Función que maneja el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -57,6 +59,11 @@ export default function LoginForm() {
             router.push('/')
           }
         }
+        toast({
+            title: '¡Sesión iniciada!',
+            description: 'Bienvenido de vuelta 😊',
+          });
+
       }
     } catch (err) {
       // Captura errores de red o del servidor

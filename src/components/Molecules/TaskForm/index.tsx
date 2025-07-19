@@ -1,22 +1,22 @@
 // Formulario para crear o editar tareas
-
 import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-/** 
- * Estructura de los datos que maneja el formulario 
- */
-interface TaskFormData {
-  title: string
-  description: string
-  project: string
+export interface TaskFormData {
+  title:      string
+  description:string
+  project:    string
   assignedTo: string
-  dueDate: string
-  category: string
-  tags: string
+  dueDate:    string
 }
 
 /**
@@ -25,23 +25,21 @@ interface TaskFormData {
  * - onChange: función para actualizar los datos
  */
 interface TaskFormProps {
-  data: TaskFormData
-  onChange: (data: TaskFormData) => void
+  data:      TaskFormData
+  onChange:  (d: TaskFormData) => void
+  projects:  { id: string; name: string }[]
+  users:     { id: string; name: string }[]
 }
 
 /**
  * TaskForm:
  * Componente de formulario usado para ingresar o editar la información de una tarea.
  */
-const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
-
-  // Función auxiliar para actualizar un campo del formulario
-  const handleChange = (field: keyof TaskFormData, value: string) => {
-    onChange({
-      ...data,
-      [field]: value
-    })
-  }
+const TaskForm: React.FC<TaskFormProps> = ({
+  data, onChange, projects, users
+}) => {
+  const change = (k: keyof TaskFormData, v: string) =>
+    onChange({ ...data, [k]: v })
 
   return (
     <div className="space-y-4">
@@ -52,7 +50,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
         <Input
           id="title"
           value={data.title}
-          onChange={(e) => handleChange('title', e.target.value)}
+          onChange={e => change('title', e.target.value)}
           placeholder="Título de la tarea"
         />
       </div>
@@ -63,8 +61,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
         <Textarea
           id="description"
           value={data.description}
-          onChange={(e) => handleChange('description', e.target.value)}
-          placeholder="Describe la tarea en detalle"
+          onChange={e => change('description', e.target.value)}
           rows={3}
         />
       </div>
@@ -72,15 +69,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
       {/* Campo: Selección del proyecto al que pertenece la tarea */}
       <div>
         <Label htmlFor="project">Proyecto</Label>
-        <Select value={data.project} onValueChange={(value) => handleChange('project', value)}>
-          <SelectTrigger>
+        <Select
+          value={data.project}
+          onValueChange={val => change('project', val)}
+        >
+          <SelectTrigger id="project">
             <SelectValue placeholder="Selecciona un proyecto" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Desarrollo de App Móvil">Desarrollo de App Móvil</SelectItem>
-            <SelectItem value="Rediseño de la plataforma web">Rediseño de la plataforma web</SelectItem>
-            <SelectItem value="Implementación CRM">Implementación CRM</SelectItem>
-            <SelectItem value="Optimización SEO">Optimización SEO</SelectItem>
+            {projects.map(p => (
+              <SelectItem key={p.id} value={p.id}>
+                {p.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -88,16 +89,19 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
       {/* Campo: Selección del responsable asignado */}
       <div>
         <Label htmlFor="assignedTo">Asignar a</Label>
-        <Select value={data.assignedTo} onValueChange={(value) => handleChange('assignedTo', value)}>
-          <SelectTrigger>
+        <Select
+          value={data.assignedTo}
+          onValueChange={val => change('assignedTo', val)}
+        >
+          <SelectTrigger id="assignedTo">
             <SelectValue placeholder="Selecciona un colaborador" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Ana Granada">Ana Granada</SelectItem>
-            <SelectItem value="Pablo Ramos">Pablo Ramos</SelectItem>
-            <SelectItem value="Simon Correa">Simon Correa</SelectItem>
-            <SelectItem value="Jesús Torres">Jesús Torres</SelectItem>
-            <SelectItem value="María López">María López</SelectItem>
+            {users.map(u => (
+              <SelectItem key={u.id} value={u.id}>
+                {u.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -109,28 +113,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           id="dueDate"
           type="date"
           value={data.dueDate}
-          onChange={(e) => handleChange('dueDate', e.target.value)}
+          onChange={e => change('dueDate', e.target.value)}
         />
       </div>
 
-      {/* Campo: Categoría de la tarea */}
-      <div>
-        <Label htmlFor="category">Categoría</Label>
-        <Select value={data.category} onValueChange={(value) => handleChange('category', value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Desarrollo">Desarrollo</SelectItem>
-            <SelectItem value="Diseño">Diseño</SelectItem>
-            <SelectItem value="Testing">Testing</SelectItem>
-            <SelectItem value="Documentación">Documentación</SelectItem>
-            <SelectItem value="Bug Fix">Bug Fix</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Campo: Etiquetas (tags) de la tarea */}
       <div>
         <Label htmlFor="tags">Etiquetas</Label>
         <Select value={data.tags} onValueChange={(value) => handleChange('tags', value)}>
@@ -147,7 +133,6 @@ const TaskForm: React.FC<TaskFormProps> = ({ data, onChange }) => {
           </SelectContent>
         </Select>
       </div>
-
     </div>
   )
 }
