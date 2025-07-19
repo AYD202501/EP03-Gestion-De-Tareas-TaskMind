@@ -47,8 +47,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={onEdit}>Editar</DropdownMenuItem>
-            <DropdownMenuItem onClick={onDelete} className="text-red-600">
+            <DropdownMenuItem onClick={onEdit} className='cursor-pointer'>Editar</DropdownMenuItem>
+            <DropdownMenuItem onClick={onDelete} className="text-red-600 cursor-pointer">
               Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -78,7 +78,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs">
+            <Button variant="outline" size="sm" className="h-7 text-xs cursor-pointer">
               Mover a <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
@@ -87,6 +87,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <DropdownMenuItem
                 key={s}
                 onClick={() => onStatusChange(task.id, s as BoardTask['status'])}
+                className="cursor-pointer"
               >
                 {s}
               </DropdownMenuItem>

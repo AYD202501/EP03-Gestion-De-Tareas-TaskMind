@@ -199,14 +199,13 @@ export default function TasksPage({
 
   return (
     <Layout user={user} childrenTitle="Tareas" childrenSubitle="Tablero de tareas">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Tablero de tareas</h2>
-        <Button onClick={openCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
+      <div className="absolute mb-8 pt-2 w-full max-w-md mx-auto">
+        <Button onClick={openCreate} className="absolute mt-2 bg-blue-500 hover:bg-blue-600 text-white shadow-md cursor-pointer">
           <Plus className="mr-2"/>Nueva tarea
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-15 w-full">
         {columns.map(col => (
           <KanbanColumn
             key={col.status}

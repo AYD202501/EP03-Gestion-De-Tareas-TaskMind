@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { useToast } from '@/components/ui/use-toast';
 
 type LoginResult =
   | { error: string }
@@ -13,6 +14,7 @@ export default function LoginForm() {
   const router = useRouter();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,6 +52,11 @@ export default function LoginForm() {
             router.push('/');
           }
         }
+        toast({
+            title: '¡Sesión iniciada!',
+            description: 'Bienvenido de vuelta 😊',
+          });
+
       }
     } catch (err) {
       console.error(err);
