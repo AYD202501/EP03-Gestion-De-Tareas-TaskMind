@@ -114,15 +114,3 @@ export function withAuth<
     }
   }
 }
-
-export function withGuestOnly(): GetServerSideProps {
-  return async (ctx) => {
-    const tokenUser = getUserFromCookie(ctx.req)
-    if (tokenUser) {
-      return { redirect: { destination: '/dashboard', permanent: false } }
-
-    }    
-
-    return { props: {} }
-  }
-}
