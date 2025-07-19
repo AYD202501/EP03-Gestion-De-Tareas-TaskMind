@@ -33,7 +33,7 @@ export default async function handler(
   }
 
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma?.user?.findUnique({
       where: { email },
       select: {
         id: true,

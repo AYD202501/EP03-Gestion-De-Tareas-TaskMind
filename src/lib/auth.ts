@@ -69,7 +69,7 @@ export function withAuth<
         return { redirect: { destination: '/login', permanent: false } }
       }
 
-      const dbUser = await prisma.user.findUnique({
+      const dbUser = await prisma?.user?.findUnique({
         where: { id: tokenUser.id },
         include: { profile: true }
       })
