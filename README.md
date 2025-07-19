@@ -24,6 +24,26 @@ El sistema está dirigido a:
 
 
 ---
+# Despliegue en vercel
+https://ep03-gestion-de-tareas.vercel.app/login
+
+Los usuarios de ejemplo para ingresar a la plataforma son:
+-
+- Administrador: 
+
+        Usuario: admin@test.com
+        Contraseña: Testing123!
+
+- Project Manager: 
+
+        Usuario: 	pm@test.com
+        Contraseña: 	Testing123!
+
+- Collaborator: 
+
+        Usuario: col@test.com
+        Contraseña: Testing123!
+---
 # Tecnologías Principales 
 Next.js 14 (App Router)
 
@@ -75,3 +95,5 @@ yarn dev
 ```
 
 Y abres [http://localhost:3000](http://localhost:3000) en tu navegador
+
+
