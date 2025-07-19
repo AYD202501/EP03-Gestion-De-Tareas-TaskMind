@@ -109,21 +109,44 @@ export default function ProjectsPage({
   }
 
   // CREATE
-  const onCreate = async () => {
-    const res = await fetch('/api/projects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    })
-    if (!res.ok) {
-      const err = await res.json()
-      return toast({ title: 'Error', description: err.error })
-    }
-    const p = (await res.json()) as ProjectItem
-    setProjects(prev => [...prev, p])
-    setModal(null)
-    toast({ title: 'Proyecto creado' })
+const onCreate = async () => {
+  const res = await fetch('/api/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(form)
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    return toast({ title: 'Error', description: err.error })
   }
+
+  // 1) Consumimos el JSON “crudo” de la API
+  const raw = await res.json()
+
+  // 2) Helper para formatear la fecha a DD/MM/YYYY
+  const formatDate = (iso: string) => {
+    const d  = new Date(iso)
+    const dd = String(d.getDate()).padStart(2, '0')
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    return `${dd}/${mm}/${yyyy}`
+  }
+
+  // 3) Lo mapeamos al tipo ProjectItem
+  const newProject: ProjectItem = {
+    id:              raw.id,
+    name:            raw.name,
+    description:     raw.description,
+    assignedToId:    raw.assignedTo?.id   ?? '',
+    assignedToName:  raw.assignedTo?.name ?? '',
+    createdAt:       formatDate(raw.createdAt),
+  }
+
+  // 4) Lo añadimos al estado
+  setProjects(prev => [...prev, newProject])
+  setModal(null)
+  toast({ title: 'Proyecto creado' })
+}
 
   // UPDATE
   const onUpdate = async () => {

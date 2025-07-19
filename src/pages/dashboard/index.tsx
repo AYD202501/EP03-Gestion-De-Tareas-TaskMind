@@ -1,60 +1,96 @@
-import Chart from "@/components/Organisms/Chart"
-import Layout from '@/components/Organisms/Layout';
-import {
-  ChartConfig,
-} from "@/components/ui/chart"
-import { UserPayload, withAuth } from "@/lib/auth";
+// src/pages/dashboard/index.tsx
+import type { GetServerSideProps } from 'next'
+import { withAuth, UserPayload } from '@/lib/auth'
+import prisma from '@/config/prisma'
+import Layout from '@/components/Organisms/Layout'
+import Chart from '@/components/Organisms/Chart'
+import type { ChartConfig } from '@/components/ui/chart'
 
-export const getServerSideProps = withAuth()
-
-const chartData = [
-  { project: "Proyecto 1", done: 186, inReview: 80, inProgress: 120, pending: 90 },
-  { project: "Proyecto 2", done: 120, inReview: 150, inProgress: 40, pending: 60 },
-  { project: "Proyecto 3", done: 210, inReview: 190, inProgress: 100, pending: 40 },
-  { project: "Proyecto 4", done: 150, inReview: 180, inProgress: 40, pending: 60 },
-
-]
-
-const chartConfig = {
-  done: {
-    label: "Completadas",
-  },
-  inReview: {
-    label: "En Revisión",
-  },
-  inProgress: {
-    label: "En progreso",
-  },
-  pending: {
-    label: "Pendiente",
-  },
-} satisfies ChartConfig
-
-const items: Record<string, {title: string, subtitle: string}> = {
-  Administrator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
-  Project_Manager: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
-  Colaborator: {title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave'},
+type ChartDatum = {
+  project:    string
+  pending:    number
+  inProgress: number
+  inReview:   number
+  done:       number
 }
 
 interface Props {
-  user: UserPayload;
+  user:      UserPayload
+  chartData: ChartDatum[]
 }
 
+export const getServerSideProps: GetServerSideProps<Props> = withAuth(
+  async () => {
+    // 1) Carga todos los proyectos con sus tareas (solo estado)
+    const projects = await prisma.project.findMany({
+      select: {
+        name: true,
+        tasks: {
+          select: { status: true }
+        }
+      }
+    })
 
-export default function Index({ user }: Props) {
-  const titleItems = items[user.role]
+    // 2) Para cada proyecto, contamos según status
+    const chartData: ChartDatum[] = projects.map((p) => {
+      let pending    = 0
+      let inProgress = 0
+      let inReview   = 0
+      let done       = 0
+
+      p.tasks.forEach((t) => {
+        switch (t.status) {
+          case 'Pending':    pending++;    break
+          case 'In_process': inProgress++; break
+          case 'Review':     inReview++;   break
+          case 'Finished':   done++;       break
+        }
+      })
+
+      return {
+        project:    p.name,
+        pending,
+        inProgress,
+        inReview,
+        done
+      }
+    })
+
+    return {
+      props: { chartData }
+    }
+  }
+)
+
+const chartConfig: ChartConfig = {
+  pending:    { label: 'Pendiente' },
+  inProgress: { label: 'En progreso' },
+  inReview:   { label: 'En Revisión' },
+  done:       { label: 'Completadas' }
+}
+
+const roleTitles: Record<Props['user']['role'], { title: string; subtitle: string }> = {
+  Administrator:   { title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave' },
+  Project_Manager: { title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave' },
+  Colaborator:     { title: 'Inicio', subtitle: 'Resumen general del sistema y métricas clave' },
+}
+
+export default function Dashboard({ user, chartData }: Props) {
+  const { title, subtitle } = roleTitles[user.role]
 
   return (
-  <Layout user={user} childrenTitle={titleItems.title} childrenSubitle={titleItems.subtitle}>
-      <div className='bg-white  px-4 py-6 rounded-lg shadow-lg'>
-        <h2 className="font-bold">Tareas por proyecto</h2>
-        <h3>Distribución de tareas por estado y proyecto</h3>
-        <br />
-        <div className="flex h-full w-full">
+    <Layout user={user} childrenTitle={title} childrenSubitle={subtitle}>
+      <div className="bg-white px-4 py-6 rounded-lg shadow-lg space-y-3 w-full max-w-4xl mx-auto mt-6">
+        <div>
+          <h2 className="font-bold">Tareas por proyecto</h2>
+          <p className="text-sm text-gray-600">
+            Distribución de tareas por estado y proyecto
+          </p>
+        </div>
+        <div className="h-[350px]">
           <Chart chartData={chartData} chartConfig={chartConfig} />
         </div>
       </div>
-  </Layout>
-  );
+    </Layout>
+  )
 }
-
